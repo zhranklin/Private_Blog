@@ -37,5 +37,5 @@ trait MyService extends HttpService {
           }
         }
       }
-    } ~ 
+    }  
 }
