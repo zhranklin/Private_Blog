@@ -5,6 +5,7 @@ import spray.routing._
 import spray.http._
 import MediaTypes._
 import spray.httpx.PlayTwirlSupport._
+import com.mongodb.casbah.Imports._
 
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
@@ -41,10 +42,7 @@ trait MyService extends HttpService {
     } ~
     path("test" / "tpl") {
       complete {
-        html.index.render("test", Seq(
-          "text1",
-          "text2"
-          ))
+        html.index.render("test", db.coll.find.toList map (new Article(_)))
       }
     }
 }

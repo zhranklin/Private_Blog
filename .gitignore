@@ -10,3 +10,4 @@ project/boot/
 src/main/resources/node_modules/
 src/main/resources/app/*.js
 src/main/resources/app/*.js.map
+*.log
