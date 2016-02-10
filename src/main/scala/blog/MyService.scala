@@ -6,6 +6,8 @@ import spray.http._
 import MediaTypes._
 import spray.httpx.PlayTwirlSupport._
 import com.mongodb.casbah.Imports._
+import com.mongodb.casbah.Imports.{MongoDBObject => $$}
+import db._
 
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
@@ -28,21 +30,13 @@ trait MyService extends HttpService {
   val myRoute =
     getFromResourceDirectory("") ~
     path("") {
-      get {
-        respondWithMediaType(`text/html`) { // XML is marshalled to `text/xml` by default, so we simply override here
-          complete {
-            <html>
-              <body>
-                <h1>Say hello to sdfsdf <i>spray-routing</i> on <i>spray-can</i>!</h1>
-              </body>
-            </html>
-          }
-        }
+      complete {
+        html.index.render("test", articles.find.toList map (new Article(_)))
       }
     } ~
-    path("test" / "tpl") {
+    path("blog" / Rest) {str =>
       complete {
-        html.index.render("test", db.coll.find.toList map (new Article(_)))
+        html.article.render(articles.findOne($$("title" -> java.net.URLDecoder.decode(str, "UTF-8"))).get)
       }
     }
 }

@@ -1,0 +1,17 @@
+@import com.zhranklin.blog._
+@(a: Article)
+@base(a.title) {
+  <h1>@a.title</h1>
+  <p class="pull-right">
+  标签:
+  @for(tag <- a.tags) {
+    <span class="label label-default">@tag</span>
+  }
+  </p>
+} {
+  <div class="row">
+    <div class="col-md-12">
+      @Html(a.content)
+   	</div><!--/col-12-->
+  </div>
+}
