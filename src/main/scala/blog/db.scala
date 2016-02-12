@@ -28,7 +28,7 @@ case class Article(title: String, author: String, content: String, abs: String,
 }
 
 object db {
-  implicit def mongoDBObjectToArticle(m: DBObject) = new Article(m)
+  implicit def mongoDBObjectToArticle(m: DBObject):Article = new Article(m)
   implicit class printableDate(d: Date) { def dateString = df.format(d) }
   val coll = MongoClient()("test")("bulkOperation")
   val articles = MongoClient()("test")("articles")
