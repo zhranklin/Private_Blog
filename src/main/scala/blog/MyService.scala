@@ -31,7 +31,7 @@ trait MyService extends HttpService {
     getFromResourceDirectory("") ~
     path("") {
       complete {
-        html.index.render("test", articles.find.toList map (new Article(_)))
+        html.index.render("Home", articles.find.toList map (new Article(_)))
       }
     } ~
     path("blog" / Rest) {str =>
