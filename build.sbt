@@ -16,14 +16,11 @@ libraryDependencies ++= {
     "com.typesafe.akka"   %%  "akka-actor"     % akkaV,
     "com.typesafe.akka"   %%  "akka-testkit"   % akkaV    % "test",
     "org.specs2"          %%  "specs2-core"    % "2.3.11" % "test",
-    "com.typesafe.slick"  %%  "slick"          % "3.1.1",
-    "org.slf4j"           %   "slf4j-nop"      % "1.6.4",
-    "mysql"          % "mysql-connector-java"  % "5.1.34",
-    "com.typesafe.slick"  %% "slick-hikaricp"  % "3.1.1",
-    "com.h2database"      %  "h2"              % "1.3.175",
     "org.mongodb"         %% "casbah"          % "3.1.0"
   )
 }
 
 Revolver.settings
 lazy val root = (project in file(".")).enablePlugins(SbtTwirl)
+mainClass in assembly := Some("com.zhranklin.blog")
+
