@@ -1,4 +1,4 @@
-@import com.zhranklin.blog.db.articlelist
+@import com.zhranklin.blog.db.articleList
 @(title: String)(heading: Html)(content: Html)
 <!DOCTYPE html>
 <html lang="en">
@@ -7,7 +7,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-
+    <meta name="Kyewords" Lang="ZH" Content="scala,编程,开发,网络,互联网">
+    <meta name="description" Content="编程相关的技术博客">
     <title>@title - Zhranklin's blog</title>
 
     <!-- Bootstrap CSS -->
@@ -45,7 +46,7 @@
       <div class="col-md-2">
         <p>文章列表</p>
         <ul class="nav">
-        @for(a <- articlelist) {
+        @for(a <- articleList) {
           <li><a href="/blog/@a.title">@a.title</a></li>
         }
         </ul>
