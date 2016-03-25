@@ -33,6 +33,12 @@ trait MyService extends HttpService {
         html.index.render("Home", articleList)
       }
     } ~
+    path("refresh") {
+      complete {
+        refreshArticleList()
+        "successfully refreshed"
+      }
+    } ~
     path("blog" / Rest) {str =>
       complete {
         html.article.render(articles.findOne($$("title" -> java.net.URLDecoder.decode(str, "UTF-8"))).get)
