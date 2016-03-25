@@ -3,9 +3,10 @@ package com.zhranklin.blog
 import akka.actor.Actor
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.Imports.{MongoDBObject => $$}
-import com.zhranklin.blog.db._
 import spray.httpx.PlayTwirlSupport._
 import spray.routing._
+
+import db._
 
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
@@ -29,7 +30,7 @@ trait MyService extends HttpService {
     getFromResourceDirectory("") ~
     path("") {
       complete {
-        html.index.render("Home", articles.find.toList map (new Article(_)))
+        html.index.render("Home", articleList)
       }
     } ~
     path("blog" / Rest) {str =>
