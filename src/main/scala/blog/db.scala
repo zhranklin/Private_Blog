@@ -33,7 +33,7 @@ case class Article(title: String, author: String, content: String, abs: String,
 object db {
 
   implicit val articles = MongoClient()("test")("articles")
-  val articleList = articles.find.toList map (new Article(_))
+  val articleList = articles.find.toList map (new Article(_)) sortWith((a1, a2) => a1.create_time after a2.create_time)
   private val df = DateFormat.getDateInstance(DateFormat.LONG)
 
   implicit def mongoDBObjectToArticle(m: DBObject):Article = new Article(m)
