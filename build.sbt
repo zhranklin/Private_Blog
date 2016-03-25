@@ -22,5 +22,5 @@ libraryDependencies ++= {
 
 Revolver.settings
 lazy val root = (project in file(".")).enablePlugins(SbtTwirl)
-mainClass in assembly := Some("com.zhranklin.blog")
+mainClass in assembly := Some("com.zhranklin.blog.Boot")
 
