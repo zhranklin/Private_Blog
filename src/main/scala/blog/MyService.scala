@@ -43,5 +43,10 @@ trait MyService extends HttpService {
       complete {
         html.article.render(articles.findOne($$("title" -> java.net.URLDecoder.decode(str, "UTF-8"))).get)
       }
+    } ~
+    path("blog_md" / Rest) {str =>
+      complete {
+        html.article_md.render(articles.findOne($$("title" -> java.net.URLDecoder.decode(str, "UTF-8"))).get)
+      }
     }
 }

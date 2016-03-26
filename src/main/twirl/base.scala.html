@@ -1,5 +1,5 @@
 @import com.zhranklin.blog.db.articleList
-@(title: String)(heading: Html)(content: Html)
+@(title: String)(heading: Html)(content: Html)(script: Html)
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -7,7 +7,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <meta name="Kyewords" Lang="ZH" Content="scala,编程,开发,网络,互联网">
+    <meta name="kyewords" Lang="ZH" Content="java,scala,编程,开发,网络,互联网">
     <meta name="description" Content="编程相关的技术博客">
     <title>@title - Zhranklin's blog</title>
 
@@ -43,7 +43,7 @@
       <div class="col-md-9">
         @content
       </div>
-      <div class="col-md-2">
+      <div class="col-md-3">
         <p>文章列表</p>
         <ul class="nav">
         @for(a <- articleList) {
@@ -87,8 +87,6 @@
 	<!-- script references -->
 		<script src="https://cdn.bootcss.com/jquery/2.1.4/jquery.min.js"></script>
 		<script src="https://cdn.rawgit.com/twbs/bootstrap/v4-dev/dist/js/bootstrap.js"></script>
-        <script src="https://cdn.bootcss.com/highlight.js/9.2.0/highlight.min.js"></script>
-        <script src="https://cdn.bootcss.com/highlight.js/9.2.0/languages/scala.min.js"></script>
-        <script>hljs.initHighlightingOnLoad();</script>
+        @script
 	</body>
 </html>
