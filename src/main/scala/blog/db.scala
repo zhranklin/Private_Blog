@@ -3,11 +3,13 @@ import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.Imports.{MongoDBObject => $, MongoDBList => $$}
 import java.util.Date
 import java.text.DateFormat
+import org.bson.types.ObjectId
 
 case class Article(title: String, author: String,
                    mdown: Option[String] = None, html: String = "",
                    abs: String, tags: List[String] = Nil,
-                   create_time: Date = new Date(), edit_time: Date = new Date ()) {
+                   create_time: Date = new Date(), edit_time: Date = new Date (),
+                   id: Option[ObjectId] = None) {
 
   def this(md: DBObject) = this(
     md.getAs[String]("title").get,
@@ -15,9 +17,10 @@ case class Article(title: String, author: String,
     md.getAs[String]("markdown"),
     md.getAs[String]("content").get,
     md.getAs[String]("abstract").get,
-    for (m <- md getAs[$$] "tags" getOrElse Nil) yield m.asInstanceOf[String],
+    (for (m <- md getAs[$$] "tags" getOrElse Nil) yield m.asInstanceOf[String]).toList,
     md.getAs[Date]("create_time").get,
-    md.getAs[Date]("edit_time").get)
+    md.getAs[Date]("edit_time").get,
+    md.getAs[ObjectId]("_id"))
 
   def modify(t: String = title, au: String = author,
              md: Option[String] = mdown, c: String = html, ab: String = abs,
@@ -58,5 +61,15 @@ object db {
       }: _*
     )
     c.find(filter).toList map mongoDBObjectToArticle
+  }
+}
+
+object util {
+  implicit class StringToStringLiteral(string: String) {
+    def toStringLiteral = "\"" + string
+        .replaceAll("\\\\", "\\\\\\\\")
+        .replaceAll("\"", "\\\\\"")
+        .lines
+        .mkString("\\n\" + \"") + "\""
   }
 }
