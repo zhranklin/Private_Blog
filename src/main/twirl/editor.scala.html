@@ -1,0 +1,63 @@
+@()
+@base("Editor") {
+  <h1>Editor</h1>
+} {
+  <form action="editor/submit" method="post" id="form">
+    <input id="title" type="hidden" name="title">
+    <input id="markdown" type="hidden" name="markdown">
+    <input id="html" type="hidden" name="html">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-10">
+          <label for="tags">标签：</label>
+          <input type="text" name="tags">
+        </div>
+        <div class="col-md-2">
+          <p class="lead">
+            <button class="btn btn-default" onclick="send();">提交</button>
+          </p>
+        </div>
+      </div>
+    </div>
+    <textarea id="editor"></textarea>
+  </form>
+} {
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+  <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+  <script src="https://cdn.bootcss.com/marked/0.3.5/marked.min.js"></script>
+  <script>
+    var mde = new SimpleMDE({
+      element: document.getElementById("editor"),
+      spellChecker: false,
+      autosave: {
+        enabled: true,
+        unique_id: "content",
+      },
+      renderingConfig: {
+        singleLineBreaks: false,
+        codeSyntaxHighlighting: true,
+      },
+    });
+    function send() {
+      marked.setOptions({
+        renderer: new marked.Renderer(),
+        gfm: true,
+        tables: true,
+        breaks: false,
+        pedantic: false,
+        sanitize: true,
+        smartLists: true,
+        smartypants: false
+      });
+      var mdRaw = mde.value();
+      var index = mdRaw.indexOf("\n");
+      var title = mdRaw.substring(0, index);
+      var mdContent = mdRaw.substring(index+1, mdRaw.length);
+      document.getElementById("title").value = title;
+      document.getElementById("markdown").value = mdContent;
+      document.getElementById("html").value = marked(mdContent);
+      document.getElementById("form").submit();
+    }
+  </script>
+}

@@ -5,8 +5,9 @@ import java.util.Date
 import java.text.DateFormat
 
 case class Article(title: String, author: String,
-                   mdown: Option[String] = None, html: String = "", abs: String,
-                   create_time: Date = new Date(), edit_time: Date = new Date (), tags: Seq[String] = Nil) {
+                   mdown: Option[String] = None, html: String = "",
+                   abs: String, tags: Seq[String] = Nil,
+                   create_time: Date = new Date(), edit_time: Date = new Date ()) {
 
   def this(md: DBObject) = this(
     md.getAs[String]("title").get,
@@ -14,13 +15,14 @@ case class Article(title: String, author: String,
     md.getAs[String]("markdown"),
     md.getAs[String]("content").get,
     md.getAs[String]("abstract").get,
+    for (m <- md getAs[$$] "tags" getOrElse Nil) yield m.asInstanceOf[String],
     md.getAs[Date]("create_time").get,
-    md.getAs[Date]("edit_time").get,
-    for (m <- md getAs[$$] "tags" getOrElse Nil) yield m.asInstanceOf[String])
+    md.getAs[Date]("edit_time").get)
 
-  def modify(t: String = title, au: String = author, c: String = html, ab: String = abs,
+  def modify(t: String = title, au: String = author,
+             md: Option[String] = mdown, c: String = html, ab: String = abs,
              ct: Date = create_time, et: Date = new Date, ta: Seq[String] = tags) =
-             Article(t, au, html = c, abs = ab, create_time = ct, edit_time = et, tags = ta)
+             Article(t, au, html = c, abs = ab, tags = ta, create_time = ct, edit_time = et)
 
   def mongo = $( "title"       -> title,
                  "author"      -> author,

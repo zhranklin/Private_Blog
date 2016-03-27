@@ -44,9 +44,23 @@ trait MyService extends HttpService {
         html.article.render(articles.findOne($$("title" -> java.net.URLDecoder.decode(str, "UTF-8"))).get)
       }
     } ~
-    path("blog_md" / Rest) {str =>
+    path("editor") {
       complete {
-        html.article_md.render(articles.findOne($$("title" -> java.net.URLDecoder.decode(str, "UTF-8"))).get)
+        html.editor.render()
+      }
+    } ~
+    path("editor" / "submit") {
+      post {
+        anyParams('title, 'html, 'markdown, 'tags) { (title, html, markdown, tags) =>
+          complete {
+            val abs = html.replaceAll("<.*>", " ").replaceAll("\\s\\s+", " ").take(200)
+            val tagList = ",".r.split(tags).map(_.trim).toList
+            val realTitle = title.trim.dropWhile(_ == '#').trim
+            articles.insert(Article(title = realTitle, author = "Zhranklin", mdown = Some(markdown), html = html, abs = abs, tags = tagList).mongo)
+            refreshArticleList()
+            "successfully inserted."
+          }
+        }
       }
     }
 }
