@@ -45,7 +45,7 @@ trait MyService extends HttpService {
               author = "Zhranklin",
               mdown = Some(markdown),
               html = Hhtml,
-              abs = Hhtml.replaceAll("<.*>", " ").replaceAll("\\s\\s+", " ").take(200),
+              abs = Hhtml.replaceAll("<.*?>", " ").replaceAll("\\s\\s+", " ").take(200),
               tags = ",".r.split(tags).map(_.trim).toList.filterNot(_ matches "\\s*")
             ).mongo
             if (id.size > 5)
