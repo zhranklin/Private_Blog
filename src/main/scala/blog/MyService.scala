@@ -37,8 +37,6 @@ trait MyService extends HttpService {
         html.article.render(articles.findOne($("title" -> java.net.URLDecoder.decode(str, "UTF-8"))).get)
       }
     } ~
-   // TODO: 这里的路由(/editor/*)做好设计
-      // 理想状态: /editor/submit 文章提交 /editor/ 添加新文章, /editor/name 修改title为name的文章
     path("editor" / "submit") {
       post {
         anyParams('id, 'title, 'html, 'markdown, 'tags) { (id, title, Hhtml, markdown, tags) =>
@@ -69,20 +67,17 @@ trait MyService extends HttpService {
     } ~
     path("editor" / Rest) { title =>
       complete {
-        html.editor.render(None)
-      }
-    } ~
-    path("edit" / Rest) { title =>
-      complete {
-        val arMongo = articles.findOne($("title" -> java.net.URLDecoder.decode(title, "UTF-8")))
-        val ar = for {
-          article <- arMongo
-          md <- article.mdown
-        } yield article
-        if (ar.isEmpty)
+        val ar: Option[Article] =
+          if (title == "") None
+          else
+            for {
+              article <- articles.findOne($("title" -> java.net.URLDecoder.decode(title, "UTF-8")))
+              md <- article.mdown
+            } yield article
+        if (ar.isEmpty && title != "")
           html.message.render("Error", "该文章不存在或无法编辑.")
         else
-          html.editor.render(Some(ar.get))
+          html.editor.render(ar)
       }
     }
 }
