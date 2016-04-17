@@ -5,19 +5,19 @@
   <h1 class="display-4">Zhranklin's blog </h1>
 } {
   <div class="row">
-    <div class="col-md-12"> 
+    <div class="col-md-12">
       <div class="panel">
         <div class="panel-body">
-          <!--/stories-->
+            <!--/stories-->
           @for(a <- articles) {
-            <div class="row">    
+            <div class="row">
               <br>
               <div class="col-md-12">
                 <h3>@a.title</h3>
                 <div class="row">
-                    <div class="col-md-12">
+                  <div class="col-md-12">
                     <p>@(Html(a.html.replaceAll("<.*?>", " ").replaceAll("\\s\\s+", " ").take(200)))...</p>
-                    <p class="lead"><button class="btn btn-default" onclick="javascript:location.href='/blog/@{a.title}'">Read More</button></p>
+                    <p class="lead"><button class="btn btn-default" onclick="javascript:location.href = '/blog/@{a.title}'">Read More</button></p>
                     <p class="pull-right">
                     @for(tag <- a.tags) {
                       <span class="label label-default">@tag</span>
@@ -26,20 +26,28 @@
                     <ul class="list-inline">
                       <li><a href="#">@a.create_time.dateString</a></li>
                     </ul>
-                    </div>
+                  </div>
                   <div class="col-xs-3"></div>
                 </div>
-                <br><br>
+                <br> <br>
               </div>
             </div>
             <hr>
           }
-          <!--/stories-->
-          <a href="/" class="btn btn-primary pull-right btnNext">More <i class="glyphicon glyphicon-chevron-right"></i></a>
+            <!--/stories-->
+          <a href="/" class="btn btn-primary pull-right btnNext">
+            More <i class="glyphicon glyphicon-chevron-right"></i></a>
         </div>
       </div>
-   	</div><!--/col-12-->
+    </div><!--/col-12-->
   </div>
 } {
-
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      bp.src = '//push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
 }
