@@ -32,8 +32,9 @@ trait MyService extends HttpService {
         html.message.render("Info", "刷新成功.")
       }
     } ~
-    path("blog" / Rest) {str =>
+    path("blog" / Rest) {s =>
       complete {
+        val str = s.replaceAll("\\+", "%2B")
         html.article.render(articles.findOne($("title" -> java.net.URLDecoder.decode(str, "UTF-8"))).get)
       }
     } ~
