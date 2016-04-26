@@ -70,11 +70,13 @@ trait MyService extends HttpService {
       complete {
         val ar: Option[Article] =
           if (title == "") None
-          else
+          else {
+            val t = title.replaceAll("\\+", "%2B")
             for {
-              article <- articles.findOne($("title" -> java.net.URLDecoder.decode(title, "UTF-8")))
+              article <- articles.findOne($("title" -> java.net.URLDecoder.decode(t, "UTF-8")))
               md <- article.mdown
             } yield article
+          }
         if (ar.isEmpty && title != "")
           html.message.render("Error", "该文章不存在或无法编辑.")
         else
