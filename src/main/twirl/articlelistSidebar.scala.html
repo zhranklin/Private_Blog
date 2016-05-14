@@ -1,0 +1,8 @@
+@import com.zhranklin.blog.db.articleList
+@()
+<p>文章列表</p>
+<ul class="nav">
+@for(a <- articleList) {
+  <li><a href="/blog/@a.title">@a.title</a></li>
+}
+</ul>

@@ -10,7 +10,8 @@
   </p>
 } {
   <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-12" id="article">
+      <h1></h1>
       @Html(a.html)
    	</div><!--/col-12-->
     <!-- 多说评论框 start -->
@@ -31,6 +32,11 @@
       <!-- 多说公共JS代码 end -->
   </div>
 } {
+  <div id="toc" class="nav nav-pills nav-stacked"></div>
+} {
+  <link rel="stylesheet" href="/css/tomorrow.min.css">
+  <link rel="stylesheet" href="/css/jquery.tocify.min.css">
+} {
   <script>
           (function () {
             var bp = document.createElement('script');
@@ -39,9 +45,19 @@
             s.parentNode.insertBefore(bp, s);
           })();
   </script>
-  <script src="https://cdn.bootcss.com/highlight.js/9.2.0/highlight.min.js"></script>
-  <script src="https://cdn.bootcss.com/highlight.js/9.2.0/languages/scala.min.js"></script>
-  <script src="https://cdn.bootcss.com/highlight.js/9.2.0/languages/vim.min.js"></script>
-  <script src="https://cdn.bootcss.com/highlight.js/9.2.0/languages/java.min.js"></script>
-  <script>hljs.initHighlightingOnLoad();</script>
+  <script src="/js/highlight.min.js"></script>
+  <script src="/js/scala.min.js"></script>
+  <script src="/js/vim.min.js"></script>
+  <script src="/js/java.min.js"></script>
+  <script src="/js/jquery-ui.min.js"></script>
+  <script src="/js/jquery.tocify.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad();
+    $(function() {
+      var toc = $("#toc").tocify({
+        selectors: "h2, h3, h4"
+      }).data("toc-tocify");
+      //$(".optionName").popover({ trigger: "hover" });
+    });
+  </script>
 }

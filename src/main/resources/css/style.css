@@ -1,0 +1,6 @@
+.active.tocify-item {
+  background-color: #0275d8;
+}
+.active.tocify-item a {
+  color: #fff;
+}

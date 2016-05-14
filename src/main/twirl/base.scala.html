@@ -1,5 +1,4 @@
-@import com.zhranklin.blog.db.articleList
-@(title: String)(heading: Html)(content: Html)(script: Html)
+@(title: String)(heading: Html)(content: Html)(sidebar: Html)(stylesheet: Html)(script: Html)
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -7,13 +6,15 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <meta name="kyewords" Lang="ZH" Content="java,scala,编程,开发,网络,互联网">
+    <meta name="keywords" Lang="ZH" Content="java,scala,编程,开发,网络,互联网">
     <meta name="description" Content="编程相关的技术博客">
     <title>@title - Zhranklin's blog</title>
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css" integrity="sha384-y3tfxAZXuh4HwSYylfB+J125MxIs6mR5FOHamPBG064zB+AFeWH94NdvaCBm8qnd" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.2.0/styles/tomorrow.min.css">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/tether-theme-basic.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    @stylesheet
   </head>
 	<body>
 <nav class="navbar navbar-fixed-top navbar-dark bg-inverse">
@@ -41,12 +42,7 @@
         @content
       </div>
       <div class="col-md-3">
-        <p>文章列表</p>
-        <ul class="nav">
-        @for(a <- articleList) {
-          <li><a href="/blog/@a.title">@a.title</a></li>
-        }
-        </ul>
+        @sidebar
       </div>
     </div>
 </div>
@@ -65,8 +61,9 @@
   </div>
 </footer>
 	<!-- script references -->
-		<script src="https://cdn.bootcss.com/jquery/2.1.4/jquery.min.js"></script>
-		<script src="https://cdn.rawgit.com/twbs/bootstrap/v4-dev/dist/js/bootstrap.js"></script>
+		<script src="/js/jquery.min.js"></script>
+    <script src="/js/tether.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
         @script
 	</body>
 </html>
