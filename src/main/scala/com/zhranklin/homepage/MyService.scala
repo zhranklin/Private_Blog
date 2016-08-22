@@ -1,15 +1,25 @@
-package com.zhranklin.blog
+package com.zhranklin.homepage
 
+import java.net.URLEncoder.encode
+import java.net.URLDecoder.decode
 import java.util.Date
 
 import akka.actor.Actor
-import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.Imports.{MongoDBList => $$, MongoDBObject => $}
+import akka.io.IO
+import akka.pattern.ask
+import com.mongodb.casbah.Imports.{MongoDBList => $$, MongoDBObject => $, _}
+import com.zhranklin.homepage.blog.Article
+import com.zhranklin.homepage.blog.db._
+import org.bson.types.ObjectId
+import spray.can.Http
+import spray.client.pipelining.{SendReceive, _}
+import spray.http._
+import spray.httpx.Json4sJacksonSupport
 import spray.httpx.PlayTwirlSupport._
 import spray.routing._
-import org.bson.types.ObjectId
-import db._
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{Await, Future}
 import scala.util.Try
 
 class MyServiceActor extends Actor with MyService {
@@ -17,7 +27,17 @@ class MyServiceActor extends Actor with MyService {
   def receive = runRoute(myRoute)
 }
 
-trait MyService extends HttpService {
+case class SolrDoc(tstamp: String, title: String, url: String, content: String)
+case class SolrQueryResponse(docs: List[SolrDoc])
+case class SolrQueryResult(response: SolrQueryResponse)
+
+trait JsonSupport extends Json4sJacksonSupport {
+  import org.json4s.DefaultFormats
+  override implicit def json4sJacksonFormats = DefaultFormats
+}
+
+trait MyService extends HttpService with JsonSupport {
+  import Boot._
 
   val myRoute =
     getFromResourceDirectory("") ~
@@ -35,7 +55,7 @@ trait MyService extends HttpService {
     path("blog" / Rest) {s =>
       complete {
         val str = s.replaceAll("\\+", "%2B")
-        html.article.render(articles.findOne($("title" -> java.net.URLDecoder.decode(str, "UTF-8"))).get)
+        html.article.render(articles.findOne($("title" -> decode(str, "UTF-8"))).get)
       }
     } ~
     path("editor" / "submit") {
@@ -81,6 +101,28 @@ trait MyService extends HttpService {
           html.message.render("Error", "该文章不存在或无法编辑.")
         else
           html.editor.render(ar)
+      }
+    } ~ solrRoute
+
+  val solrHost = "solr.zhranklin.com"
+  val solrPort = 80
+  import ContentTypes._
+  def changeContentType(response: HttpResponse): HttpResponse =
+    response.mapEntity(entity ⇒ HttpEntity.NonEmpty(`application/json`, entity.toOption.get.data))
+  val pipeline: HttpRequest ⇒ Future[SolrQueryResult] =
+    sendReceive ~> changeContentType ~> unmarshal[SolrQueryResult]
+  lazy val solrRoute =
+    path("solr" / Rest) { rest ⇒
+      complete {
+        val pipeline: Future[HttpRequest ⇒ Future[SolrQueryResult]] = (for (
+          Http.HostConnectorInfo(connector, _) <- IO(Http) ? Http.HostConnectorSetup(solrHost, port = solrPort)
+        ) yield sendReceive(connector)).map(_ ~> changeContentType ~> unmarshal[SolrQueryResult])
+        import concurrent.duration._
+        val queryUrl = s"/solr/select?q=${encode(rest, "UTF-8")}&wt=json"
+        val resultFuture: Future[SolrQueryResult] = pipeline.flatMap(_(Get(queryUrl)))
+        val result = Await.result(resultFuture, 5.seconds)
+        val doc:SolrDoc = result.response.docs(1)
+        html.message.render(doc.title, doc.content)
       }
     }
 }

@@ -1,8 +1,9 @@
-package com.zhranklin.blog
-import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.Imports.{MongoDBObject => $, MongoDBList => $$}
-import java.util.Date
+package com.zhranklin.homepage.blog
+
 import java.text.DateFormat
+import java.util.Date
+
+import com.mongodb.casbah.Imports.{MongoDBList => $$, MongoDBObject => $, _}
 import org.bson.types.ObjectId
 
 case class Article(title: String, author: String,
