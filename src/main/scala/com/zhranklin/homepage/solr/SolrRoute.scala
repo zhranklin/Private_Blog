@@ -62,7 +62,7 @@ trait SolrRoute extends HttpService with JsonSupport {
             result ← Try(gettingResult)
           } yield result.response.docs
           resultFuture.map{
-            res: SolrQueryResult ⇒ html.index.render(s"Result of: $keyword", res.response.docs)
+            res: SolrQueryResult ⇒ html.index.render(s"Result of: $keyword", "search", res.response.docs)
           }.recover{case _ ⇒ html.message.render("Info", s"No results for search: $keyword")}
         }
       } ~

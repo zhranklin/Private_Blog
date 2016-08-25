@@ -1,7 +1,7 @@
 @import com.zhranklin.homepage.blog.Article
 @import com.zhranklin.homepage.blog.util._
 @(article: Option[Article])
-@base("Editor") {
+@base("Editor")("home") {
   <h1>Editor</h1>
 } {
   <form action="/editor/submit" method="post" id="form">

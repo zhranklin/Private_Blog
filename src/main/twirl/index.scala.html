@@ -1,8 +1,8 @@
 @import com.zhranklin.homepage.blog.db._
 @import com.zhranklin.homepage.blog.Article
 @import com.zhranklin.homepage.PageItem
-@(title: String)(items: Seq[PageItem])
-@base(title) {
+@(title: String)(nav: String)(items: Seq[PageItem])
+@base(title)(nav) {
   <h1 class="display-4">@title</h1>
 } {
   <div class="row">

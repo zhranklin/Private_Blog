@@ -1,4 +1,4 @@
-@(title: String)(heading: Html)(content: Html)(sidebar: Html)(stylesheet: Html)(script: Html)
+@(title: String)(nav: String)(heading: Html)(content: Html)(sidebar: Html)(stylesheet: Html)(script: Html)
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -21,8 +21,11 @@
 <nav class="navbar navbar-fixed-top navbar-dark bg-inverse">
   <a class="navbar-brand" href="/">Zhranklin's Blog</a>
   <ul class="nav navbar-nav">
-    <li class="nav-item active">
+    <li class="nav-item @if(nav == "home"){active}">
       <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+    </li>
+    <li class="nav-item @if(nav == "search"){active}">
+      <a class="nav-link" href="/solr">Search <span class="sr-only">(current)</span></a>
     </li>
   </ul>
 </nav>

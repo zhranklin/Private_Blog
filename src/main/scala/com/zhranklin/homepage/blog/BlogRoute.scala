@@ -14,7 +14,7 @@ trait BlogRoute extends HttpService {
   val blogRoute =
     path("") {
       complete {
-        html.index.render("Zhranklin's blog - home", articleList)
+        html.index.render("Zhranklin's blog - home", "home", articleList)
       }
     } ~
       path("refresh") {
