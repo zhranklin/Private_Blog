@@ -1,16 +1,24 @@
 package com.zhranklin.homepage.blog
 
 import java.text.DateFormat
+import java.time.LocalDateTime
 import java.util.Date
 
 import com.mongodb.casbah.Imports.{MongoDBList => $$, MongoDBObject => $, _}
+import com.zhranklin.homepage.PageItem
 import org.bson.types.ObjectId
 
 case class Article(title: String, author: String,
                    mdown: Option[String] = None, html: String = "",
                    abs: String, tags: List[String] = Nil,
                    create_time: Date = new Date(), edit_time: Date = new Date (),
-                   id: Option[ObjectId] = None) {
+                   id: Option[ObjectId] = None) extends PageItem {
+
+  override val itemTitle = title
+  override val itemLink = s"/blog/$title"
+  override val itemTags = tags
+  override val itemText = html.replaceAll("<.*?>", " ").replaceAll("\\s\\s+", " ").take(200)
+  override val itemTime: Date = create_time
 
   def this(md: DBObject) = this(
     md.getAs[String]("title").get,
@@ -32,6 +40,7 @@ case class Article(title: String, author: String,
                  "markdown" -> mdown, "content" -> html,
                  "abstract" -> abs, "tags" -> tags,
                  "create_time" -> create_time, "edit_time" -> edit_time)
+
 }
 
 object db {

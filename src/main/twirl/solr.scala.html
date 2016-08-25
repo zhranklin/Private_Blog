@@ -1,0 +1,19 @@
+@base("Search") {
+  <h1>Search</h1>
+} {
+  <div class="row">
+    <form action="/solr" method="get">
+      <div class="col-md-12">
+        <input type="text" name="keyword" placeholder="Input some text.">
+        <input type="submit">
+      </div>
+    </form>
+  </div>
+} {
+  <div id="toc" class="nav nav-pills nav-stacked"></div>
+} {
+  <link rel="stylesheet" href="/css/tomorrow.min.css">
+} {
+  <script src="/js/jquery-ui.min.js"></script>
+  <script src="/js/jquery.tocify.min.js"></script>
+}
