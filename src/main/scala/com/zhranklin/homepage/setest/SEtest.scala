@@ -32,7 +32,7 @@ object SEtest {
 
 class NewsItem(title: String, content: String, val url: String)
   extends Article(title = title, abs = "", author = "scu_cs", html = content) {
-  override val itemLink = "/setest/" + URLEncoder.encode(url, "utf-8")
+  override val itemLink = "/setest?url=" + URLEncoder.encode(url, "utf-8")
 }
 
 trait SEtestRoute extends HttpService {
@@ -45,15 +45,17 @@ trait SEtestRoute extends HttpService {
 
   val seTestRoute =
     path("setest") {
-      complete {
-        html.index.render("test news", "search", news_pieces)
+      parameter('url) { rurl ⇒
+        complete {
+          val url = java.net.URLDecoder.decode(rurl, "utf-8")
+          println(url)
+          html.setestarticle.render(news_pieces.filter(_.url == url).head)
+        }
       }
     } ~
-    path("setest" / Rest) { rurl ⇒
+    path("setest") {
       complete {
-        val url = java.net.URLDecoder.decode(rurl, "utf-8")
-        println(url)
-        html.setestarticle.render(news_pieces.filter(_.url == url).head)
+        html.index.render("test news", "search", news_pieces)
       }
     }
 }
