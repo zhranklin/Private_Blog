@@ -61,6 +61,12 @@ trait BlogRoute extends HttpService {
           else
             html.editor.render(ar)
         }
+      } ~
+      path("2048" / Rest) { text =>
+        complete {
+          val textList = text.split("\\+").toList.map(decode(_, "utf-8"))
+          html.m2048.render(textList)
+        }
       }
 
   private def getCreateTimeAndBid(id: String): (Option[Date], Option[ObjectId]) = {
