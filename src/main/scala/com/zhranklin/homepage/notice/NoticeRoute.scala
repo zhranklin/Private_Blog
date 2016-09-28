@@ -1,5 +1,6 @@
-package com.zhranklin.homepage.setest
-import java.net.URLEncoder
+package com.zhranklin.homepage.notice
+import java.net.URLDecoder.decode
+import java.net.URLEncoder.encode
 
 import com.zhranklin.homepage.blog.Article
 import org.jsoup._
@@ -32,10 +33,10 @@ object SEtest {
 
 class NewsItem(title: String, content: String, val url: String)
   extends Article(title = title, abs = "", author = "scu_cs", html = content) {
-  override val itemLink = "/setest?url=" + URLEncoder.encode(url, "utf-8")
+  override val itemLink = "/setest?url=" + encode(url, "utf-8")
 }
 
-trait SEtestRoute extends HttpService {
+trait NoticeRoute extends HttpService {
   import SEtest._
 
   val news_pieces =
@@ -43,19 +44,34 @@ trait SEtestRoute extends HttpService {
       .map(getDoc)
       .map(toItem)
 
-  val seTestRoute =
-    path("setest") {
+  val news = NoticeServiceObjects.serviceList.par.map(s ⇒ (s.source, s.notices().map(s.toArticle).take(100).par.toList)).toList.toMap
+
+  val noticeRoute =
+    path("notice") {
+      val sources = news.keys.toList.sorted.map(s ⇒ (s, "/notice/" + encode(s, "utf-8")))
+      complete {
+        html.notice.render(sources)
+      }
+    } ~
+    path("notice" / Rest) { sourceRaw ⇒
       parameter('url) { rurl ⇒
+        val source = decode(sourceRaw, "utf-8")
         complete {
           val url = java.net.URLDecoder.decode(rurl, "utf-8")
           println(url)
-          html.setestarticle.render(news_pieces.filter(_.url == url).head)
+          println(source)
+          println(rurl)
+          println(sourceRaw)
+          println(news.get(source).get.map(_.itemLink) mkString "\nxxx")
+          html.noticeArticle.render(news.get(source).get.filter(a ⇒ decode(a.itemLink, "utf-8").contains(rurl)).head)
         }
-      }
-    } ~
-    path("setest") {
-      complete {
-        html.index.render("test news", "search", news_pieces)
+      } ~
+      pathEnd {
+        val source = decode(sourceRaw, "utf-8")
+        println(source)
+        news.get(source).map(notices ⇒ complete {
+          html.index.render(source, "notice", notices)
+        }).get
       }
     }
 }
