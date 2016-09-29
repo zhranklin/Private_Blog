@@ -8,7 +8,7 @@ object NoticeServiceObjects {
 
   val csNoticeFetcher = new FunNoticeFetcher(contentF("#BodyLabel"), dateF("td[width]:matches(时间.*来源)"))
 
-  class CSService(name: String, part: String, tpl: String) extends NoticeService(s"计算机学院 - $name",
+  class CSService(name: String, part: String, tpl: String) extends NoticeService(name,
     new SelectorIndexService(s".*/$part/.*\\d{10,}.*", s"http://$tpl<index>.htm"), csNoticeFetcher)
 
   class LawService(title: String, listId: String) extends NoticeService(s"法学院 - $title",
@@ -31,10 +31,10 @@ object NoticeServiceObjects {
       "http://jwc.scu.edu.cn/jwc/moreNotice.action?url=moreNotice.action&type=2&keyWord=&pager.pageNow=<index>"),
       new FunNoticeFetcher(selectorF("input[name=news.content]")(_.first.attr("value")),
         dateF("table[width=900] td:contains(发布时间)"))),
-    new CSService("学术看板", "xskb", "cs.scu.edu.cn/cs/xsky/xskb/H951901index_"),
-    new CSService("学院通知", "xytz", "cs.scu.edu.cn/cs/xytz/H9502index_"),
-    new CSService("学院通知", "xyxw", "cs.scu.edu.cn/cs/xyxw/H9501index_"),
-    new CSService("访谈录", "ftl", "cs.scu.edu.cn/cs/fwzy/ftl/H951204index_"),
+    new CSService("计算机学院 - 学术看板", "xskb", "cs.scu.edu.cn/cs/xsky/xskb/H951901index_"),
+    new CSService("计算机学院 - 学院通知", "xytz", "cs.scu.edu.cn/cs/xytz/H9502index_"),
+    new CSService("计算机学院 - 学院新闻", "xyxw", "cs.scu.edu.cn/cs/xyxw/H9501index_"),
+    new CSService("计算机学院 - 访谈录", "ftl", "cs.scu.edu.cn/cs/fwzy/ftl/H951204index_"),
     new CSService("川大在线", "cdzx", "news.scu.edu.cn/news2012/cdzx/I0201index_"),
     new NoticeService("电气信息学院 - 学院通知", new SelectorIndexService(".*detail\\.jsp", "http://seei.scu.edu.cn/student,p<index>,index.jsp"),
       new FunNoticeFetcher(contentF("td[width=770]"), dateF("p:contains(发布时间)"))),
