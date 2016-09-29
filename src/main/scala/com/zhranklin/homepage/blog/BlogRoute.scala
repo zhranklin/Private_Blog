@@ -1,16 +1,14 @@
 package com.zhranklin.homepage.blog
-import java.net.URLDecoder.decode
 import java.util.Date
 
-import com.mongodb.casbah.Imports.{MongoDBList => $$, MongoDBObject => $, _}
+import com.mongodb.casbah.Imports.{MongoDBList ⇒ $$, MongoDBObject ⇒ $, _}
+import com.zhranklin.homepage.MyHttpService
 import com.zhranklin.homepage.blog.db._
 import org.bson.types.ObjectId
-import spray.routing._
-import spray.httpx.PlayTwirlSupport._
 
 import scala.util.Try
 
-trait BlogRoute extends HttpService {
+trait BlogRoute extends MyHttpService {
   val blogRoute =
     path("") {
       complete {
@@ -26,7 +24,7 @@ trait BlogRoute extends HttpService {
       path("blog" / Rest) {s =>
         complete {
           val str = s.replaceAll("\\+", "%2B")
-          html.article.render(articles.findOne($("title" -> decode(str, "UTF-8"))).get)
+          html.article.render(articles.findOne($("title" -> decode(str))).get)
         }
       } ~
       path("editor" / "submit") {
@@ -64,7 +62,7 @@ trait BlogRoute extends HttpService {
       } ~
       path("2048" / Rest) { text =>
         complete {
-          val textList = text.split("\\+").toList.map(decode(_, "utf-8"))
+          val textList = text.split("\\+").toList.map(decode)
           html.m2048.render(textList)
         }
       }
