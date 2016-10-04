@@ -2,14 +2,14 @@ package com.zhranklin.homepage.blog
 import java.util.Date
 
 import com.mongodb.casbah.Imports.{MongoDBList ⇒ $$, MongoDBObject ⇒ $, _}
-import com.zhranklin.homepage.MyHttpService
+import com.zhranklin.homepage.{MyHttpService, RouteService}
 import com.zhranklin.homepage.blog.db._
 import org.bson.types.ObjectId
 
 import scala.util.Try
 
-trait BlogRoute extends MyHttpService {
-  val blogRoute =
+trait BlogRoute extends RouteService {
+  abstract override def myRoute = super.myRoute ~
     path("") {
       complete {
         html.index.render("Zhranklin's blog - home", "home", articleList)
@@ -21,7 +21,7 @@ trait BlogRoute extends MyHttpService {
           html.message.render("Info", "刷新成功.")
         }
       } ~
-      path("blog" / Rest) {s =>
+      path("blog" / Rest) { s =>
         complete {
           val str = s.replaceAll("\\+", "%2B")
           html.article.render(articles.findOne($("title" -> decode(str))).get)

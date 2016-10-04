@@ -4,19 +4,16 @@ import akka.actor.{Actor, ActorSystem, Props}
 import akka.io.IO
 import akka.pattern.ask
 import akka.util.Timeout
-import com.zhranklin.homepage.blog.BlogRoute
-import com.zhranklin.homepage.notice.NoticeRoute
-import com.zhranklin.homepage.solr.SolrRoute
 import spray.can.Http
 
 import scala.concurrent.duration._
 
-class MyServiceActor extends Actor with BlogRoute with SolrRoute with NoticeRoute{
+trait ServiceActor extends Actor { self: RouteService ⇒
   def actorRefFactory = context
-
-  val myRoute = getFromResourceDirectory("") ~ blogRoute ~ solrRoute ~ noticeRoute
   def receive = runRoute(myRoute)
 }
+
+class MyServiceActor extends ServiceActor with MyRouteService
 
 object Boot extends App {
 

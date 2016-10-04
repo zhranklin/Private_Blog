@@ -6,3 +6,5 @@ trait JsonSupport extends Json4sJacksonSupport {
   import org.json4s.DefaultFormats
   override implicit def json4sJacksonFormats = DefaultFormats
 }
+
+object JsonSupport extends JsonSupport

@@ -12,6 +12,7 @@ libraryDependencies ++= {
   val akkaV = "2.3.9"
   val sprayV = "1.3.3"
   Seq(
+    "org.scala-lang"      %   "scala-reflect"  % "2.11.8",
     "io.spray"            %%  "spray-can"      % sprayV,
     "io.spray"            %%  "spray-routing"  % sprayV,
     "io.spray"            %%  "spray-client"   % sprayV,

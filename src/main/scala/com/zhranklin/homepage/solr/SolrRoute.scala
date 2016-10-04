@@ -7,7 +7,7 @@ import java.time.LocalDateTime
 import java.util.Date
 
 import com.zhranklin.homepage.Boot._
-import com.zhranklin.homepage.{JsonSupport, MyHttpService, PageItem}
+import com.zhranklin.homepage.{JsonSupport, MyHttpService, PageItem, RouteService}
 import spray.client.pipelining._
 import spray.http.ContentTypes.`application/json`
 import spray.http._
@@ -35,7 +35,7 @@ case class SolrDoc(tstamp: String, title: String, url: String, content: String) 
 case class SolrQueryResponse(docs: List[SolrDoc])
 case class SolrQueryResult(response: SolrQueryResponse)
 
-trait SolrRoute extends MyHttpService with JsonSupport {
+trait SolrRoute extends RouteService with JsonSupport {
   def changeContentType(response: HttpResponse): HttpResponse =
     response.mapEntity(entity ⇒ HttpEntity.NonEmpty(`application/json`, entity.toOption.get.data))
 
@@ -48,7 +48,7 @@ trait SolrRoute extends MyHttpService with JsonSupport {
 
   val pipeline = sendReceive ~> changeContentType ~> unmarshal[SolrQueryResult]
 
-  val solrRoute =
+  abstract override def myRoute = super.myRoute ~
     path("solr") {
       parameter('keyword) { keyword ⇒
         complete {
