@@ -1,24 +1,23 @@
 package com.zhranklin.homepage.notice
 
+import org.json4s._
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 
 object NoticeServiceObjects {
 
-  trait ServiceBase extends UrlService with IndexService with FunNoticeFetcher
-  trait NormalServiceBase extends ServiceBase with SelectorUrlService {
+  trait ServiceBase extends IndexService with FunNoticeFetcher with SelectorUrlService {
     val initVal: ((Document) ⇒ String, (Document) ⇒ String, String, String)
     lazy val (getContent, getDateStr, urlPattern, template) = initVal
   }
 
-  class CSService(name: String, part: String, tpl: String) extends NoticeService(name) with NormalServiceBase {
-    val initVal = (contentF("#BodyLabel"), dateF("td[width]:matches(时间.*来源)"), s".*/$part/.*\\d{10,}.*", s"http://$tpl<index>.htm")}
   class LawService(title: String, listId: String) extends NoticeService(s"法学院 - $title") with UrlService with IndexService with FunNoticeFetcher {
     val getContent = contentF("div.text")
     val getDateStr = dateF("span:contains(发布时间)")
     val template = "http://law.scu.edu.cn/xjax?arg=8573&arg=<index>&arg=20&arg=list&clazz=PortalArticleAction&method=list"
-    import org.json4s._
+
     def getUrl(id: String) = s"http://law.scu.edu.cn/detail.jsp?portalId=725&cid=8385&nextcid=$listId&aid=$id"
+
     override def noticeUrlsFromUrl(url: String): Iterable[NoticeEntry] = {
       val jsonStr = Jsoup.connect(url).execute().body()
       val json = jackson.parseJson(jsonStr)
@@ -28,38 +27,27 @@ object NoticeServiceObjects {
   }
 
   val serviceList = List(
-    new NoticeService("教务处 - 通知") with NormalServiceBase {
+    "文新学院 - 学院动态 - test" →
+      "http://www.sculj.cn/Special_News.asp?SpecialID=40&SpecialName=%D1%A7%D4%BA%B6%AF%CC%AC&page=<index>",
+    "经济学院 - 学院新闻 - test" → "http://sesu.scu.edu.cn/news/list_1_<index>.html",
+    "经济学院 - 学院公告" → "http://sesu.scu.edu.cn/gonggao/list_2_<index>.html",
+    "计算机学院 - 学术看板 - test" → "http://cs.scu.edu.cn/cs/xsky/xskb/H951901index_<index>.htm",
+    "计算机学院 - 学院通知 - test" → "http://cs.scu.edu.cn/cs/xytz/H9502index_<index>.htm",
+    "计算机学院 - 学院新闻 - test" → "http://cs.scu.edu.cn/cs/xyxw/H9501index_<index>.htm",
+    "计算机学院 - 访谈录 - test" → "http://cs.scu.edu.cn/cs/fwzy/ftl/H951204index_<index>.htm",
+    "川大在线 - test" → "http://news.scu.edu.cn/news2012/cdzx/I0201index_<index>.htm",
+    "数学学院 - 学院新闻" →"http://math.scu.edu.cn/news.asp?PAGE=<index>",
+    "电气信息学院 - 学院通知" → "http://seei.scu.edu.cn/student,p<index>,index.jsp",
+    "外国语学院 - 学院公告" → "http://flc2.scu.edu.cn/foreign/a/xueyuangonggao/list_27_<index>.html"
+  ).map { tp ⇒
+    new NoticeService(tp._1) with UniversalUrlService with UniversalNoticeFetcher with IndexService {
+      val template = tp._2
+    }
+  } ++ List(
+    new NoticeService("教务处 - 通知") with ServiceBase {
       val initVal =(selectorF("input[name=news.content]")(_.first.attr("value")), dateF("table[width=900] td:contains(发布时间)"),
         "newsShow.*", "http://jwc.scu.edu.cn/jwc/moreNotice.action?url=moreNotice.action&type=2&keyWord=&pager.pageNow=<index>")},
-    new CSService("计算机学院 - 学术看板", "xskb", "cs.scu.edu.cn/cs/xsky/xskb/H951901index_"),
-    new CSService("计算机学院 - 学院通知", "xytz", "cs.scu.edu.cn/cs/xytz/H9502index_"),
-    new CSService("计算机学院 - 学院新闻", "xyxw", "cs.scu.edu.cn/cs/xyxw/H9501index_"),
-    new CSService("计算机学院 - 访谈录", "ftl", "cs.scu.edu.cn/cs/fwzy/ftl/H951204index_"),
-    new CSService("川大在线", "cdzx", "news.scu.edu.cn/news2012/cdzx/I0201index_"),
-    new NoticeService("电气信息学院 - 学院通知") with NormalServiceBase { val initVal = (contentF("td[width=770]"),
-      dateF("p:contains(发布时间)"), ".*detail\\.jsp","http://seei.scu.edu.cn/student,p<index>,index.jsp")
-    },
-//  new NoticeService("数学学院 - 学术报告", new SelectorIndexService("xsbg_show\\.asp\\?classid.*", "http://math.scu.edu.cn/xsbg.asp?PAGE=<index>"),
-//    new FunNoticeFetcher(contentF("td[width=796]"), dateF("td:contains(发布时间)"))),
-    new NoticeService("数学学院 - 学院新闻") with NormalServiceBase { val initVal = (contentF("td[height=504]"),
-      dateF("td:contains(更新时间)"), "News_show\\.asp\\?classid.*", "http://math.scu.edu.cn/news.asp?PAGE=<index>")
-    }, new NoticeService("经济学院 - 学院新闻") with NormalServiceBase {
-      val initVal = (contentF("div.mt20"), dateF("div.info"), "/news/\\d+.html", "http://sesu.scu.edu.cn/news/list_1_<index>.html")
-    }, new NoticeService("经济学院 - 学院公告") with NormalServiceBase {
-      val initVal = (contentF("div.mt20"), dateF("div.info"), "/gonggao/\\d+.html", "http://sesu.scu.edu.cn/gonggao/list_2_<index>.html")
-    }, new LawService("学院新闻", "8572"), new LawService("学院公告", "8573"),
-    new NoticeService("文学与新闻学院 - 学院动态") with NormalServiceBase { val initVal = (
-      contentF("tr:has(td[height=50]:matches(阅读\\d+次)) + tr > td"), dateF("td[height=50]:matches(阅读\\d+次)"),
-      "ReadNews\\.asp", "http://www.sculj.cn/Special_News.asp?SpecialID=40&SpecialName=%D1%A7%D4%BA%B6%AF%CC%AC&page=<index>")
-    }, new NoticeService("外国语学院 - 学院公告") with NormalServiceBase { val initVal = (contentF("div.content td"),
-      dateF("div.info"), "/foreign/a/xueyuangonggao/\\d+/\\d+/\\d+\\.html", "http://flc2.scu.edu.cn/foreign/a/xueyuangonggao/list_27_<index>.html")
-    })
-  /*val serviceList = List(
-    new NoticeService("文新 - 学院动态 - test") with UniversalUrlService with UniversalNoticeFetcher with IndexService {
-      protected val template: String = "http://www.sculj.cn/Special_News.asp?SpecialID=40&SpecialName=%D1%A7%D4%BA%B6%AF%CC%AC&page=<index>"
-    },
-    new NoticeService("经济 - 学院新闻 - test") with UniversalUrlService with UniversalNoticeFetcher with IndexService {
-      protected val template: String = "http://sesu.scu.edu.cn/news/list_1_<index>.html"
-    }
-  )*/
+    new LawService("学院新闻", "8572"),
+    new LawService("学院公告", "8573")
+  )
 }

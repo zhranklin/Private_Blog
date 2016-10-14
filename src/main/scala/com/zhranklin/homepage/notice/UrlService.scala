@@ -27,45 +27,39 @@ trait SelectorUrlService
   def extractFromRawUrl(a: Element) = NoticeEntry(a.attr("abs:href"), Some(a.text))
 }
 
+object UniversalUrlService extends UniversalUrlService
+
 trait UniversalUrlService extends UrlService with JsoupUtil {
 
   def noticeUrlsFromUrl(indexUrl: String) = {
     println(s"index: $indexUrl")
-    def tryGroup(urls: Seq[Element]) = {
-      def properGroup(pre: Int, post: Int) = {
-        val counts = groupByPrePostFix(urls, pre, post).map(_._2.size)
-        counts.count(_ > 5) - (urls.size - counts.max) / 18
-      }
-      def pMax(pre: Boolean = true) = 1 to 200 takeWhile { n ⇒ (if(pre) properGroup(n, 0) else properGroup(0, n)) > 0} last
-      val preMax = pMax()
-      val postMax = pMax(false)
-      0
+    def getPostFix(url: String) = """(?<=\.)\w+$""".r.findFirstIn(url).getOrElse("")
+    def properGroup(urls: Seq[Element], pre: Int) = {
+      val counts = groupByPreFix(urls, pre).map(_._2.size)
+      counts.count(_ > 5) - (urls.size - counts.max) / 18
     }
-    def groupByPrePostFix(urls: Seq[Element], pre: Int, post: Int) =
-      urls.groupBy(e ⇒ (e.href.take(pre), e.href.takeRight(post)))
-    println("aaaaaa")
+    def tryGroup(urls: Seq[Element]) = 1 to 200 takeWhile {properGroup(urls, _) > 0} last
+    def groupByPreFix(urls: Seq[Element], pre: Int) = urls.groupBy(e ⇒ (e.href.take(pre), getPostFix(e.href)))
     def longEnough(urls: Seq[Element]) = urls.map(_.text.length).sum / urls.size.asInstanceOf[Double] > 7
-    println("aaaaaa")
     val doc = Jsoup.connect(indexUrl).get
-    println("aaaaaa")
+    doc.body.select("a[href]").asScala.map(a ⇒ a.html(a.text))
     doc.body select "*:not(:has(a[href]))" select "*:not(a[href])" remove
-    val urls = doc.select("*:last-of-type:nth-of-type(n+5)").asScala.flatMap(_.parent.select("a[href]").asScala)
-    println("aaaaaa")
-    def LongUrlsWithFun(pre: Int, post: Int)(urls: Seq[Element]) =
-      groupByPrePostFix(urls, tryGroup(urls), 0).values.filter(longEnough).flatten.toSeq
-    val longUrls = LongUrlsWithFun(0, 0) _ andThen LongUrlsWithFun(0,0)
+    val urls = doc.select("*:last-of-type:nth-of-type(n+5)").asScala
+      .flatMap(_.parent.select("a[href]").asScala)
+      .filterNot(_.attr("href").endsWith("/"))
     try {
-      val urlsLongEnough = longUrls(urls)
-      println("aaaaaa")
-      val anotherTry = tryGroup(urlsLongEnough)
-      println("aaaaaa")
-      val shrunkPrefixSize = "^.*?(?=\\d*$)".r.findFirstIn(urlsLongEnough.head.href.take(anotherTry)).map(_.length).getOrElse(anotherTry)
-      println("aaaaaa")
-      val ret = groupByPrePostFix(urlsLongEnough, shrunkPrefixSize, 0).values.filter(_.size > 5).flatten.map(e ⇒ NoticeEntry(e.absHref, Some(e.text)))
+      val urlsLongEnough = groupByPreFix(urls, tryGroup(urls)).values.filter(longEnough).flatten.toSeq
+      val preLen = tryGroup(urlsLongEnough)
+      val shrunkenPreLen = "^.*?(?=\\d+$)".r.findFirstIn(urlsLongEnough.head.href.take(preLen)).map(_.length).getOrElse(preLen)
+      val ret = groupByPreFix(urlsLongEnough, shrunkenPreLen).values
+        .filter(_.size > 5).flatten.map(e ⇒ NoticeEntry(e.absHref, Some(e.text)))
       println(s"*****\nret: $ret\n*****")
       ret
     } catch {
       case e: UnsupportedOperationException ⇒ Nil
+      case e ⇒
+        e.printStackTrace(Console.out)
+        Nil
     }
   }
 }

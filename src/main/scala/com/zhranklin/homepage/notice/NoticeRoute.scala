@@ -3,7 +3,8 @@ package com.zhranklin.homepage.notice
 import com.zhranklin.homepage.{MyHttpService, RouteService}
 
 trait NoticeRoute extends RouteService {
-  lazy val news = NoticeServiceObjects.serviceList.map(s ⇒ (s.source, s.notices().map(s.toArticle).take(30).toList)).toList.toMap
+  NoticeServiceObjects.serviceList.map(_.getUrls.take(3) mkString "\n").foreach(println)
+  lazy val news = NoticeServiceObjects.serviceList.map(s ⇒ (s.source, s.notices().map(s.toArticle).take(5).toList)).toList.toMap
   abstract override def myRoute = super.myRoute ~
     path("notice") {
       lazy val sources = news.keys.toList.sorted.map(s ⇒ (s, "/notice/" + encode(s)))

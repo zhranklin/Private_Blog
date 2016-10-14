@@ -1,29 +1,35 @@
 package com.zhranklin.homepage.imhere
 
 import com.zhranklin.homepage.RouteService
+import com.zhranklin.homepage.JsonSupport._
+import com.zhranklin.homepage.imhere.Model._
 
 trait IMhereRoute extends RouteService {
-  import com.zhranklin.homepage.JsonSupport._
   abstract override def myRoute = super.myRoute ~
-  pathPrefix("imh") {
-    pathPrefix("test" / IntNumber) { i ⇒
-      val responses = Array(
-        IMhereItem("title0", "text", "kkk"),
-        IMhereItem("title1", "html", "<h1>head</h1><p>ttext</p>"),
-        IMhereItem("title2", "html", "<h2>head2</h2><p>text</p>"),
-        IMhereItem("title3", "url", "http://www.baidu.com"),
-        IMhereItem("title4", "text", "kkk4"),
-        IMhereItem("title5", "text", "kkk5"),
-        IMhereItem("title6", "text", "kkk6"),
-        IMhereItem("title7", "text", "kkk7"),
-        IMhereItem("title8", "text", "kkk8"),
-        IMhereItem("title9", "text", "kkk9"))
-      complete {
-        responses(i)
+    pathPrefix("imh") {
+      pathPrefix("place") {
+        pathPrefix(Rest) { uuid ⇒
+          get {
+            PlaceDao.get(uuid).map(pl ⇒ complete(pl))
+              .getOrElse(reject)
+          } ~
+          delete {
+            PlaceDao.delete(uuid).map(pl ⇒ complete(pl))
+              .getOrElse(reject)
+          } ~
+          put {
+            entity(as[Place]) { pl ⇒
+              PlaceDao.update(uuid, pl).map(p ⇒ complete(p))
+                .getOrElse(reject)
+            }
+          }
+        } ~
+        post {
+          entity(as[Place]) { pl ⇒
+            PlaceDao.add(pl).map(p ⇒ complete(p))
+              .getOrElse(reject)
+          }
+        }
       }
     }
-  }
 }
-
-
-case class IMhereItem(title: String, `type`: String, content: String)

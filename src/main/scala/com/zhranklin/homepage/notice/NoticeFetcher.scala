@@ -38,7 +38,8 @@ trait FunNoticeFetcher extends NoticeFetcher {
   }
 }
 
-trait UniversalNoticeFetcher extends NoticeFetcher { self: UniversalUrlService ⇒
+trait UniversalNoticeFetcher extends NoticeFetcher {
+  import UniversalUrlService._
   val splits = List("-", "\\.", "/")
   val d2 = "\\d{1,2}"
   val dPattern = String.join("|", splits.map(s ⇒ s"(?:(?:\\d{4}$s)?$d2$s$d2(?:\\s+$d2:$d2(?::$d2)?)?)").asJava)
@@ -61,7 +62,7 @@ trait UniversalNoticeFetcher extends NoticeFetcher { self: UniversalUrlService �
 
   def properTime(doc: Document) = doc.select("*").asScala.flatMap(getTime).maxBy(_._2)
 
-  protected def parse(doc: Document, title: Option[String]) = {
+  def parse(doc: Document, title: Option[String]) = {
     disLink(doc)
     val time = properTime(doc)
     val html = time._3.siblingElements.asScala.maxBy(_.text.length).html
