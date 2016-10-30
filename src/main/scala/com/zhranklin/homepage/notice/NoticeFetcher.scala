@@ -2,9 +2,9 @@ package com.zhranklin.homepage.notice
 
 import java.util.Date
 
+import com.zhranklin.homepage.Util
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import com.zhranklin.homepage.Util
 import org.jsoup.select.Elements
 
 import scala.util.Try

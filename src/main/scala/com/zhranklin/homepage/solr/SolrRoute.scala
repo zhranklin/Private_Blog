@@ -6,14 +6,14 @@ import java.sql.Timestamp
 import java.time.LocalDateTime
 import java.util.Date
 
-import com.zhranklin.homepage.Boot._
-import com.zhranklin.homepage.{JsonSupport, MyHttpService, PageItem, RouteService}
-import spray.client.pipelining._
-import spray.http.ContentTypes.`application/json`
-import spray.http._
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.client.RequestBuilding._
+import akka.http.scaladsl.model.MediaTypes._
+import akka.http.scaladsl.model._
+import akka.http.scaladsl.unmarshalling.Unmarshal
+import com.zhranklin.homepage._
 
 import scala.concurrent.Await
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.util.Try
 
@@ -36,8 +36,9 @@ case class SolrQueryResponse(docs: List[SolrDoc])
 case class SolrQueryResult(response: SolrQueryResponse)
 
 trait SolrRoute extends RouteService with JsonSupport {
+  import ActorImplicits._
   def changeContentType(response: HttpResponse): HttpResponse =
-    response.mapEntity(entity ⇒ HttpEntity.NonEmpty(`application/json`, entity.toOption.get.data))
+    response.mapEntity(entity ⇒ HttpEntity(`application/json`, entity.dataBytes))
 
   def enc = java.net.URLEncoder.encode(_: String, "UTF-8")
   def dec = java.net.URLDecoder.decode(_: String, "UTF-8")
@@ -46,26 +47,31 @@ trait SolrRoute extends RouteService with JsonSupport {
   val solrHost = env.getOrElse("SOLR_HOST", "127.0.0.1")
   val solrPort = env get "SOLR_PORT" map Integer.parseInt getOrElse 8983
 
-  val pipeline = sendReceive ~> changeContentType ~> unmarshal[SolrQueryResult]
 
   abstract override def myRoute = super.myRoute ~
     path("solr") {
       parameter('keyword) { keyword ⇒
         complete {
-          val url = s"http://$solrHost:$solrPort/solr/select?q=${enc(keyword)}&wt=json"
-          val request = Get(url)
-          def resultFuture = pipeline(request)
-          def gettingResult: SolrQueryResult = Await.result(resultFuture, 5.seconds)
-          val docsOpt = for {
-            result ← Try(gettingResult)
-          } yield result.response.docs
-          resultFuture.map{
-            res: SolrQueryResult ⇒ html.index.render(s"Result of: $keyword", "search", res.response.docs)
-          }.recover{case _ ⇒ html.message.render("Info", s"No results for search: $keyword")}
+          test(keyword)
         }
       } ~
       complete {
         html.solr.render()
       }
     }
+
+  def test(keyword: String) = {
+    val url = s"http://$solrHost:$solrPort/solr/select?q=${enc(keyword)}&wt=json"
+    val request = Get(url)
+    val resultFuture =
+      Http().singleRequest(request).flatMap(
+        changeContentType _ andThen (Unmarshal(_).to[SolrQueryResult]))
+    def gettingResult: SolrQueryResult = Await.result(resultFuture, 5.seconds)
+    val docsOpt = for {
+      result ← Try(gettingResult)
+    } yield result.response.docs
+    resultFuture.map {
+      res: SolrQueryResult ⇒ html.index.render(s"Result of: $keyword", "search", res.response.docs)
+    }.recover { case _ ⇒ html.message.render("Info", s"No results for search: $keyword") }
+  }
 }

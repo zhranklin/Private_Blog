@@ -1,29 +1,21 @@
 package com.zhranklin.homepage
 
-import akka.actor.{Actor, ActorSystem, Props}
-import akka.io.IO
-import akka.pattern.ask
+import akka.http.scaladsl.Http
 import akka.util.Timeout
-import spray.can.Http
 
 import scala.concurrent.duration._
+import scala.io.StdIn
 
-trait ServiceActor extends Actor { self: RouteService ⇒
-  def actorRefFactory = context
-  def receive = runRoute(myRoute)
-}
+object Boot extends App with MyRouteService {
 
-class MyServiceActor extends ServiceActor with MyRouteService
-
-object Boot extends App {
-
-  // we need an ActorSystem to host our application in
-  implicit val system = ActorSystem("on-spray-can")
-
-  // create and start our service actor
-  val service = system.actorOf(Props[MyServiceActor], "demo-service")
+  import ActorImplicits._
 
   implicit val timeout = Timeout(5.seconds)
-  // start a new HTTP server on port 8080 with our service actor as the handler
-  IO(Http) ? Http.Bind(service, interface = "localhost", port = 8080)
+
+  val bindingFuture = Http().bindAndHandle(myRoute, "localhost", 8080)
+  println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
+  StdIn.readLine() // let it run until user presses return
+  bindingFuture
+    .flatMap(_.unbind()) // trigger unbinding from the port
+    .onComplete(_ ⇒ system.terminate()) // and shutdown when done
 }

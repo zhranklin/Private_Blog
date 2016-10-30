@@ -1,7 +1,7 @@
 package com.zhranklin.homepage.imhere
 
-import com.zhranklin.homepage.imhere.Model._
 import com.mongodb.casbah.Imports.{MongoDBList ⇒ $$, MongoDBObject ⇒ $, _}
+import com.zhranklin.homepage.imhere.Model._
 
 import scala.util.Try
 

@@ -1,26 +1,26 @@
 package com.zhranklin.homepage.imhere
 
 import com.zhranklin.homepage.RouteService
-import com.zhranklin.homepage.JsonSupport._
 import com.zhranklin.homepage.imhere.Model._
 
 trait IMhereRoute extends RouteService {
   abstract override def myRoute = super.myRoute ~
     pathPrefix("imh") {
       pathPrefix("place") {
-        pathPrefix(Rest) { uuid ⇒
-          (get & complete) {
+        pathPrefix(Segment) { uuid ⇒
+          (get & complete _) {
             PlaceDao.get(uuid)
           } ~
-          (delete & complete) {
+          (delete & complete _) {
             if (PlaceDao.delete(uuid))
               PlaceDao.get(uuid)
             else
-              ("error")
+              "error"
 
           } ~
           (put & entity(as[Place])) { pl ⇒ ctx ⇒
             PlaceDao.update(uuid, pl)
+            ctx.complete(pl)
           }
         } ~
         (post & entity(as[Place])) { pl ⇒ complete {

@@ -1,9 +1,9 @@
 package com.zhranklin.homepage.notice
 
 import com.zhranklin.homepage.JsoupUtil
+import com.zhranklin.homepage.Util._
 import org.jsoup.Jsoup
 import org.jsoup.nodes.{Document, Element}
-import com.zhranklin.homepage.Util._
 
 trait UrlService {
   def noticeUrlsFromUrl(url: String): Iterable[NoticeEntry]
@@ -57,7 +57,7 @@ trait UniversalUrlService extends UrlService with JsoupUtil {
       ret
     } catch {
       case e: UnsupportedOperationException ⇒ Nil
-      case e ⇒
+      case e: Exception ⇒
         e.printStackTrace(Console.out)
         Nil
     }

@@ -4,7 +4,6 @@ import java.net.URLEncoder
 import java.util.Date
 
 import com.zhranklin.homepage.blog.Article
-import org.jsoup.Jsoup
 
 import scala.util.Try
 

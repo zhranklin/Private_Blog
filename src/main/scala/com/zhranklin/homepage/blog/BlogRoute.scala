@@ -11,12 +11,12 @@ import scala.util.Try
 
 trait BlogRoute extends RouteService {
   abstract override def myRoute = super.myRoute ~
-    path("section" / Rest) { section ⇒
+    path("section" / Segment) { section ⇒
       complete {
         html.index.render(s"Zhranklin's blog - $section", section, articleList(Some(section)))
       }
     } ~
-    (path("") & complete) {
+    (path("") & complete _) {
       html.index.render("Zhranklin's blog - home", "home", articleList(None))
     } ~
     path("refresh") {
@@ -25,14 +25,14 @@ trait BlogRoute extends RouteService {
         html.message.render("Info", "刷新成功.")
       }
     } ~
-    path("blog" / Rest) { s =>
+    path("blog" / Segment) { s =>
       complete {
         val str = s.replaceAll("\\+", "%2B")
         html.article.render(articles.findOne($("title" -> decode(str))).get)
       }
     } ~
     pathPrefix("editor") {
-      (pathPrefix("submit") & post & anyParams('id, 'title, 'html, 'markdown, 'tags, 'section)) {
+      (pathPrefix("submit") & post & formField('id, 'title, 'html, 'markdown, 'tags, 'section)) {
         (id, title, content, markdown, tags, section) => complete {
           val (createTime, bid) = getCreateTimeAndBid(id)
           val art = createArticle(title, section, content, markdown, tags, createTime)
@@ -44,7 +44,7 @@ trait BlogRoute extends RouteService {
           html.message.render("Info", "修改/添加成功.")
         }
       } ~
-      pathPrefix(Rest) { title =>
+      pathPrefix(Segment) { title ⇒
         complete {
           val ar: Option[Article] =
             if (title == "") None
@@ -61,11 +61,11 @@ trait BlogRoute extends RouteService {
             html.editor.render(ar)
         }
       } ~
-      (pathEnd & complete) {
+      (pathEnd & complete _) {
         html.editor.render(None)
       }
     } ~
-    path("2048" / Rest) { text =>
+    path("2048" / Segment) { text ⇒
       complete {
         val textList = text.split("\\+").toList.map(decode)
         html.m2048.render(textList)

@@ -1,6 +1,6 @@
 package com.zhranklin.homepage.notice
 
-import com.zhranklin.homepage.{MyHttpService, RouteService}
+import com.zhranklin.homepage.RouteService
 
 trait NoticeRoute extends RouteService {
 //  NoticeServiceObjects.serviceList.map(_.getUrls.take(3) mkString "\n").foreach(println)
@@ -12,7 +12,7 @@ trait NoticeRoute extends RouteService {
         html.notice.render(sources)
       }
     } ~
-    path("notice" / Rest) { sourceRaw ⇒
+    path("notice" / Segment) { sourceRaw ⇒
       parameter('url) { url ⇒
         val source = decode(sourceRaw)
         complete {
