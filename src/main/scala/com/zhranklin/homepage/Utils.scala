@@ -16,6 +16,7 @@ import scala.collection.convert.{DecorateAsJava, DecorateAsScala}
 trait Util extends DecorateAsJava with DecorateAsScala {
   val encode = URLEncoder.encode(_: String, "utf-8")
   val decode = URLDecoder.decode(_: String, "utf-8")
+  def getToken = System.getenv("PSW")
 }
 
 trait MyHttpService extends Util with PlayTwirlSupport with JsonSupport with Directives

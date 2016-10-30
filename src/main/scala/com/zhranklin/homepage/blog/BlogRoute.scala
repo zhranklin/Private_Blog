@@ -31,7 +31,10 @@ trait BlogRoute extends RouteService {
         html.article.render(articles.findOne($("title" -> decode(str))).get)
       }
     } ~
-    pathPrefix("editor") {
+    pathPrefix("editor" / Segment) { token ⇒
+      (if (token != getToken)
+        complete("invalid token!")
+      else reject) ~
       (pathPrefix("submit") & post & formField('id, 'title, 'html, 'markdown, 'tags, 'section)) {
         (id, title, content, markdown, tags, section) => complete {
           val (createTime, bid) = getCreateTimeAndBid(id)

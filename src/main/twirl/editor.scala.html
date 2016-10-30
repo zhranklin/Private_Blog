@@ -1,10 +1,11 @@
 @import com.zhranklin.homepage.blog.Article
 @import com.zhranklin.homepage.blog.util._
+@import com.zhranklin.homepage.Util.getToken
 @(article: Option[Article])
 @base("Editor")("home") {
   <h1>Editor</h1>
 } {
-  <form action="/editor/submit" method="post" id="form">
+  <form action="/editor/@getToken/submit" method="post" id="form">
     <input id="title" type="hidden" name="title">
     <input id="markdown" type="hidden" name="markdown">
     <input id="html" type="hidden" name="html">
