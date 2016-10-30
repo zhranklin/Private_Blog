@@ -9,14 +9,10 @@ object PlaceDao {
   private val place = MongoClient()("imhere")("place")
 
   private def mongoToPlace(m: DBObject) = Place(m.getAs[String]("uuid").get, m.getAs[String]("name").get)
-  def get(uuid: String): Option[Place] = place.findOne($("uuid" → uuid)).map(mongoToPlace)
-  def add(p: Place): Option[Place] = Try(place.insert($(p.getMap: _*))).toOption.map(r ⇒ p)
-  def delete(uuid: String): Option[Place] = for {
-    deleted ← place.findOne($("uuid" → uuid))
-    _ ← Try(place.remove($("uuid" → uuid))).toOption
-  } yield mongoToPlace(deleted)
-  def update(uuid: String, p: Place): Option[Place] =
-    Try(place.update($("uuid" → uuid), $(p.getMap:_*))).toOption.map(r ⇒ p)
+  def get(uuid: String): Place = place.findOne($("uuid" → uuid)).map(mongoToPlace).get
+  def add(p: Place): Unit = place.insert($(p.getMap: _*))
+  def delete(uuid: String) = place.remove($("uuid" → uuid)).getN > 0
+  def update(uuid: String, p: Place) = place.update($("uuid" → uuid), $(p.getMap:_*)).isUpdateOfExisting
 }
 
 object ItemDao {
@@ -31,13 +27,8 @@ object ItemDao {
 
   def idTuple(id: String) = "_id" → new ObjectId(id)
 
-  def get(id: String): Option[Item] = item.findOne($(idTuple(id))).map(mongoToItem)
-
-  def add(i: Item): Option[Item] = Try(item.insert($(i.getMap:_*))).toOption.map(r ⇒ i)
-  def delete(id: String): Option[Item] = for {
-    deleted ← item.findOne($(idTuple(id)))
-    _ ← Try(item.remove($(idTuple(id)))).toOption
-  } yield mongoToItem(deleted)
-  def update(id: String, i: Item): Option[Item] =
-    Try(item.update($(idTuple(id)), $(i.getMap:_*))).toOption.map(r ⇒ i)
+  def get(id: String): Item = item.findOne($(idTuple(id))).map(mongoToItem).get
+  def add(i: Item): Unit = Try(item.insert($(i.getMap:_*))).toOption.map(r ⇒ i)
+  def delete(id: String) = item.remove($(idTuple(id))).getN > 0
+  def update(id: String, i: Item) = item.update($(idTuple(id)), $(i.getMap:_*)).isUpdateOfExisting
 }

@@ -8,7 +8,7 @@ import com.mongodb.casbah.Imports.{MongoDBList => $$, MongoDBObject => $, _}
 import com.zhranklin.homepage.PageItem
 import org.bson.types.ObjectId
 
-case class Article(title: String, author: String,
+case class Article(title: String, author: String, section: String,
                    mdown: Option[String] = None, html: String = "",
                    abs: String, tags: List[String] = Nil,
                    create_time: Date = new Date(), edit_time: Date = new Date (),
@@ -23,6 +23,7 @@ case class Article(title: String, author: String,
   def this(md: DBObject) = this(
     md.getAs[String]("title").get,
     md.getAs[String]("author").get,
+    md.getAs[String]("section").getOrElse("tech"),
     md.getAs[String]("markdown"),
     md.getAs[String]("content").get,
     md.getAs[String]("abstract").get,
@@ -31,12 +32,12 @@ case class Article(title: String, author: String,
     md.getAs[Date]("edit_time").get,
     md.getAs[ObjectId]("_id"))
 
-  def modify(t: String = title, au: String = author,
+  def modify(t: String = title, au: String = author, sec: String,
              md: Option[String] = mdown, c: String = html, ab: String = abs,
              ct: Date = create_time, et: Date = new Date, ta: List[String] = tags) =
-    Article(t, au, html = c, abs = ab, tags = ta, create_time = ct, edit_time = et)
+    Article(t, au, section = sec, html = c, abs = ab, tags = ta, create_time = ct, edit_time = et)
 
-  def mongo = $( "title" -> title, "author" -> author,
+  def mongo = $( "title" -> title, "author" -> author, "section" → section,
                  "markdown" -> mdown, "content" -> html,
                  "abstract" -> abs, "tags" -> tags,
                  "create_time" -> create_time, "edit_time" -> edit_time)
@@ -49,7 +50,8 @@ object db {
   implicit def mongoDBObjectToArticle(m: DBObject):Article = new Article(m)
   implicit class printableDate(d: Date) { def dateString = df.format(d) }
 
-  def articleList = articleList_var
+  def articleList(secOpt: Option[String]) =
+    secOpt map (s ⇒ articleList_var.filter(_.section == s)) getOrElse articleList_var
   def refreshArticleList() = articleList_var = getArticleList
 
   private var articleList_var = getArticleList

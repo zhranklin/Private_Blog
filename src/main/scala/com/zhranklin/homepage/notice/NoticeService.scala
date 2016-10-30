@@ -23,7 +23,7 @@ case class NoticeEntry(url: String, title: Option[String] = None)
 abstract class NoticeService(val source: String) extends UrlService with IndexService with NoticeFetcher {
   def getUrls: Iterable[NoticeEntry] = indexUrls.map(u ⇒ Try(noticeUrlsFromUrl(u))).takeWhile(_.isSuccess).flatMap(_.get)
   def notices(after: Date = new Date(0)): Iterable[Notice] = getUrls.map(n ⇒ Try(fetch(n))).filter(_.isSuccess).take(30).map(_.get).takeWhile(_.date.after(after))
-  def toArticle(notice: Notice) = new Article(notice.title, source, None, notice.html, "", Nil, notice.date) {
+  def toArticle(notice: Notice) = new Article(notice.title, source, "notice", None, notice.html, "", Nil, notice.date) {
     override val itemLink = s"/notice/$source?url=" + URLEncoder.encode(notice.url, "utf-8")
   }
 }

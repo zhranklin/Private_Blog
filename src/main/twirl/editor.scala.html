@@ -11,9 +11,13 @@
     <input id="id_form" type="hidden" name="id">
     <div class="container">
       <div class="row">
-        <div class="col-md-10">
+        <div class="col-md-5">
           <label for="tags">标签：</label>
           <input type="text" name="tags" @if(article.nonEmpty){value="@article.get.tags.mkString(", ")"}>
+        </div>
+        <div class="col-md-5">
+          <label for="tags">板块：</label>
+          <input type="text" name="section" @if(article.nonEmpty){value="@article.get.section"}>
         </div>
         <div class="col-md-2">
           <p class="lead">

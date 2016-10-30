@@ -9,27 +9,33 @@ trait IMhereRoute extends RouteService {
     pathPrefix("imh") {
       pathPrefix("place") {
         pathPrefix(Rest) { uuid ⇒
-          get {
-            PlaceDao.get(uuid).map(pl ⇒ complete(pl))
-              .getOrElse(reject)
+          (get & complete) {
+            PlaceDao.get(uuid)
           } ~
-          delete {
-            PlaceDao.delete(uuid).map(pl ⇒ complete(pl))
-              .getOrElse(reject)
+          (delete & complete) {
+            if (PlaceDao.delete(uuid))
+              PlaceDao.get(uuid)
+            else
+              ("error")
+
           } ~
-          put {
-            entity(as[Place]) { pl ⇒
-              PlaceDao.update(uuid, pl).map(p ⇒ complete(p))
-                .getOrElse(reject)
-            }
+          (put & entity(as[Place])) { pl ⇒ ctx ⇒
+            PlaceDao.update(uuid, pl)
           }
         } ~
-        post {
-          entity(as[Place]) { pl ⇒
-            PlaceDao.add(pl).map(p ⇒ complete(p))
-              .getOrElse(reject)
-          }
+        (post & entity(as[Place])) { pl ⇒ complete {
+          PlaceDao.add(pl)
+          pl
         }
+        }
+      } ~
+      pathPrefix("item") {
+        get { ctx ⇒
+          ctx.complete("")
+        }
+      } ~
+      (pathPrefix("test") & post & entity(as[String])) {str ⇒ complete(str)
+
       }
     }
 }

@@ -2,7 +2,7 @@
 @()
 <p>文章列表</p>
 <ul class="nav">
-@for(a <- articleList) {
+@for(a <- articleList(Some("tech"))) {
   <li><a href="/blog/@a.title">@a.title</a></li>
 }
 </ul>

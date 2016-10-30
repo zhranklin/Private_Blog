@@ -9,15 +9,11 @@ import org.jsoup.select.Elements
 
 import scala.util.Try
 
-trait NoticeFetcher extends Util {
+trait NoticeFetcher extends Util with DateUtils {
   protected def parse(doc: Document, title: Option[String]): Notice
-  private val splits = List("-", "\\.", "/")
-  private val d2 = "\\d{1,2}"
-  private val dPattern = String.join("|", splits.map(s ⇒ s"(?:(?:\\d{4}$s)?$d2$s$d2(?:\\s+$d2:$d2(?::$d2)?)?)").asJava)
-  private val dMatch = s".*?(?<!\\d)($dPattern)(?!\\d).*?".r
   protected def exDate(arg: String) = {
-    val dMatch(dStr) = arg
-    new Date(dStr replaceAll (splits mkString "|", "/"))
+    val du.dMatch(dStr) = arg
+    new Date(dStr replaceAll (du.splittersOr, "/"))
   }
   private def absLink(doc: Document) = {
     List("href", "src").foreach(n ⇒ doc.select(s"[$n]").asScala.map(l ⇒ l.attr(n, l.attr(s"abs:$n"))))
@@ -40,10 +36,6 @@ trait FunNoticeFetcher extends NoticeFetcher {
 
 trait UniversalNoticeFetcher extends NoticeFetcher {
   import UniversalUrlService._
-  val splits = List("-", "\\.", "/")
-  val d2 = "\\d{1,2}"
-  val dPattern = String.join("|", splits.map(s ⇒ s"(?:(?:\\d{4}$s)?$d2$s$d2(?:\\s+$d2:$d2(?::$d2)?)?)").asJava)
-  val dMatch = s".*?(?<!\\d)($dPattern)(?!\\d).*?".r
   def disLink(doc: Document) = {
     val urls =  noticeUrlsFromUrl(doc.baseUri).map(_.url)
     urls.foreach { u ⇒
@@ -52,20 +44,20 @@ trait UniversalNoticeFetcher extends NoticeFetcher {
       val text = e.text.replaceAll("\\s+", "")
       var p = e
       while(p.parent.text.replaceAll("\\s+", "") == text) p = p.parent
-      p.remove
+      p.remove()
     }
   }
-  def getTime(e: Element): Option[(Date, Int, Element)] = Try(dMatch.unapplySeq(e.text).get.head)
-    .map(_.replaceAll(splits mkString "|", "/"))
+  def getTime(e: Element): Option[(Date, Element, Int)] = Try(du.dMatch.unapplySeq(e.text).get.head)
+    .map(_.replaceAll(du.splittersOr, "/"))
     .map(new Date(_)).filter(i ⇒ e.text.replaceAll("\\s+", "").length < 60).toOption
-    .map {(_, List("更新", "阅读", "来源", "时间", "编辑", "责任").count(e.text.contains)*100 + e.select("*").size, e)}
+    .map ((_, e, List("更新", "阅读", "来源", "时间", "编辑", "责任").count(e.text.contains) * 100 + e.select("*").size))
 
-  def properTime(doc: Document) = doc.select("*").asScala.flatMap(getTime).maxBy(_._2)
+  def properTime(doc: Document) = doc.select("*").asScala.toIterator.flatMap(getTime).maxBy(_._3) //TODO: 这里的重构未检查
 
   def parse(doc: Document, title: Option[String]) = {
     disLink(doc)
     val time = properTime(doc)
-    val html = time._3.siblingElements.asScala.maxBy(_.text.length).html
+    val html = time._2.siblingElements.asScala.maxBy(_.text.length).html
     Notice(doc.baseUri, title.getOrElse(doc.title), html, time._1)
   }
 }

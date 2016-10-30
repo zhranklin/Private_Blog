@@ -1,8 +1,9 @@
 package com.zhranklin.homepage.blog
+
 import java.util.Date
 
 import com.mongodb.casbah.Imports.{MongoDBList ⇒ $$, MongoDBObject ⇒ $, _}
-import com.zhranklin.homepage.{MyHttpService, RouteService}
+import com.zhranklin.homepage.RouteService
 import com.zhranklin.homepage.blog.db._
 import org.bson.types.ObjectId
 
@@ -10,40 +11,40 @@ import scala.util.Try
 
 trait BlogRoute extends RouteService {
   abstract override def myRoute = super.myRoute ~
-    path("") {
+    path("section" / Rest) { section ⇒
       complete {
-        html.index.render("Zhranklin's blog - home", "home", articleList)
+        html.index.render(s"Zhranklin's blog - $section", section, articleList(Some(section)))
       }
     } ~
-      path("refresh") {
-        complete {
+    (path("") & complete) {
+      html.index.render("Zhranklin's blog - home", "home", articleList(None))
+    } ~
+    path("refresh") {
+      complete {
+        refreshArticleList()
+        html.message.render("Info", "刷新成功.")
+      }
+    } ~
+    path("blog" / Rest) { s =>
+      complete {
+        val str = s.replaceAll("\\+", "%2B")
+        html.article.render(articles.findOne($("title" -> decode(str))).get)
+      }
+    } ~
+    pathPrefix("editor") {
+      (pathPrefix("submit") & post & anyParams('id, 'title, 'html, 'markdown, 'tags, 'section)) {
+        (id, title, content, markdown, tags, section) => complete {
+          val (createTime, bid) = getCreateTimeAndBid(id)
+          val art = createArticle(title, section, content, markdown, tags, createTime)
+          if (bid.nonEmpty)
+            articles.update("_id" $eq bid.get, art.mongo)
+          else
+            articles.insert(art.mongo)
           refreshArticleList()
-          html.message.render("Info", "刷新成功.")
+          html.message.render("Info", "修改/添加成功.")
         }
       } ~
-      path("blog" / Rest) { s =>
-        complete {
-          val str = s.replaceAll("\\+", "%2B")
-          html.article.render(articles.findOne($("title" -> decode(str))).get)
-        }
-      } ~
-      path("editor" / "submit") {
-        post {
-          anyParams('id, 'title, 'html, 'markdown, 'tags) { (id, title, content, markdown, tags) =>
-            complete {
-              val (createTime, bid) = getCreateTimeAndBid(id)
-              val art = createArticle(title, content, markdown, tags, createTime)
-              if (bid.nonEmpty)
-                articles.update("_id" $eq bid.get, art.mongo)
-              else
-                articles.insert(art.mongo)
-              refreshArticleList()
-              html.message.render("Info", "修改/添加成功.")
-            }
-          }
-        }
-      } ~
-      path("editor" / Rest) { title =>
+      pathPrefix(Rest) { title =>
         complete {
           val ar: Option[Article] =
             if (title == "") None
@@ -54,18 +55,22 @@ trait BlogRoute extends RouteService {
                 md <- article.mdown
               } yield article
             }
-          if (ar.isEmpty && title != "")
+          if (ar.isEmpty)
             html.message.render("Error", "该文章不存在或无法编辑.")
           else
             html.editor.render(ar)
         }
       } ~
-      path("2048" / Rest) { text =>
-        complete {
-          val textList = text.split("\\+").toList.map(decode)
-          html.m2048.render(textList)
-        }
+      (pathEnd & complete) {
+        html.editor.render(None)
       }
+    } ~
+    path("2048" / Rest) { text =>
+      complete {
+        val textList = text.split("\\+").toList.map(decode)
+        html.m2048.render(textList)
+      }
+    }
 
   private def getCreateTimeAndBid(id: String): (Option[Date], Option[ObjectId]) = {
     val timeAndId = for {
@@ -76,10 +81,10 @@ trait BlogRoute extends RouteService {
     timeAndId.getOrElse(None, None)
   }
 
-  private def createArticle(title: String, content: String, markdown: String,
+  private def createArticle(title: String, section: String, content: String, markdown: String,
                             tags: String, createTime: Option[Date]): Article =
     Article(
-      title = title.trim.dropWhile(_ == '#').trim,
+      title = title.trim.dropWhile(_ == '#').trim, section = section,
       author = "Zhranklin", mdown = Some(markdown), html = content,
       create_time = createTime.getOrElse(new Date),
       abs = content.replaceAll("<.*?>", " ").replaceAll("\\s\\s+", " ").take(200),
