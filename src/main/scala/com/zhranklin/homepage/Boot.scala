@@ -7,6 +7,7 @@ import javax.net.ssl._
 import akka.http.scaladsl._
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
+import com.zhranklin.homepage.scalikejdbc.SqlTest
 
 import scala.concurrent.duration._
 import scala.io.{Source, StdIn}
@@ -17,7 +18,7 @@ object Boot extends App with MyRouteService {
 
   implicit val timeout = Timeout(5.seconds)
 
-  Class.forName("com.zhranklin.homepage.scalikejdbc.SqlTest$")
+  val test = SqlTest
 
   val conf = ConfigFactory.load().getConfig("settings.server")
   val httpBindingFuture = Http().bindAndHandle(myRoute, "localhost", conf.getInt("http_port"))

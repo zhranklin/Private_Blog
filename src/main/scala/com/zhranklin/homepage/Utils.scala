@@ -2,14 +2,14 @@ package com.zhranklin.homepage
 
 import java.net.{URLDecoder, URLEncoder}
 
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.marshalling.{Marshaller, ToEntityMarshaller}
 import akka.http.scaladsl.model.MediaType
 import akka.http.scaladsl.model.MediaTypes._
 import akka.http.scaladsl.server.Directives
-import de.heikoseeberger.akkahttpjson4s.Json4sSupport
 import org.bson.types.ObjectId
-import org.json4s.{CustomSerializer, Formats, jackson, _}
 import play.twirl.api.{Html, Txt, Xml}
+import spray.json.DefaultJsonProtocol
 
 import scala.collection.convert.{DecorateAsJava, DecorateAsScala}
 
@@ -38,18 +38,24 @@ trait JsoupUtil extends Util {
   type Try[E] = scala.util.Try[E]
 }
 
-trait JsonSupport extends Json4sSupport {
+trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
+  import spray.json._
 
-  import org.json4s.DefaultFormats
+  implicit object OIDFormat extends RootJsonFormat[ObjectId] {
+    def write(id: ObjectId) = JsString(id.toString)
+    def read(value: JsValue) = value match {
+      case JsString(id) ⇒ new ObjectId(id)
+      case _ ⇒ deserializationError("string literal expected")
+    }
+  }
 
-  val OIDSer = new CustomSerializer[ObjectId](formats ⇒ ( {
-    case JString(str) ⇒ new ObjectId(str)
-  }, {
-    case id: ObjectId ⇒ JString(id.toString)
-  }))
-
-  implicit val json4sJacksonFormats: Formats = DefaultFormats + OIDSer
-  implicit val serialization = jackson.Serialization
+  import com.zhranklin.homepage.imhere.Model._
+  import com.zhranklin.homepage.solr._
+  implicit val placeFormat = jsonFormat2(Place)
+  implicit val itemFormat = jsonFormat5(Item)
+  implicit val sdFormat = jsonFormat(SolrDoc, "tstamp", "title", "url", "content")
+  implicit val sqresFormat = jsonFormat1(SolrQueryResponse)
+  implicit val sqrusFormat = jsonFormat1(SolrQueryResult)
 }
 
 trait PlayTwirlSupport {

@@ -21,7 +21,7 @@ object Model {
   case class Item(title: String, `type`: String, content: String, place: String, id: ObjectId = null) extends CaseWithNames with HaveOID {
     def names = Array("title", "type", "content", "place", "_id")
   }
-  object Item {
+  object Item1 {
     val is = List(
       Item("title0", "text", "kkk", "001"),
       Item("title1", "html", "<h1>head</h1><p>ttext</p>", "001"),

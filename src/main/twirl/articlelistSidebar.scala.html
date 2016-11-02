@@ -1,8 +1,8 @@
 @import com.zhranklin.homepage.blog.db.articleList
-@()
+@(section: String = "tech")
 <p>文章列表</p>
 <ul class="nav">
-@for(a <- articleList(Some("tech"))) {
+@for(a <- articleList(Some(section))) {
   <li><a href="/blog/@a.title">@a.title</a></li>
 }
 </ul>
