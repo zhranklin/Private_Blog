@@ -50,7 +50,8 @@ object db {
   implicit class printableDate(d: Date) { def dateString = df.format(d) }
 
   def articleList(secOpt: Option[String]) =
-    secOpt map (s ⇒ articleList_var.filter(_.section == s)) getOrElse articleList_var
+    secOpt map (s ⇒ articleList_var.filter(_.section == s)) getOrElse
+      articleList_var.filter(a ⇒ List("tech", "misc", "music").contains(a.section))
   def refreshArticleList() = articleList_var = getArticleList
 
   private var articleList_var = getArticleList
