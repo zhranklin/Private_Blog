@@ -25,10 +25,12 @@ object Boot extends App with MyRouteService {
   val httpsBindingFuture =
     Http().bindAndHandle(myRoute, "localhost", conf.getInt("https_port"), SSLConfig.https)
   println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
-  StdIn.readLine() // let it run until user presses return
-  Seq(httpBindingFuture, httpsBindingFuture).foreach { _
-    .flatMap(_.unbind())
-    .onComplete(_ ⇒ system.terminate())
+  if (System.getProperty("product") == null) {
+    StdIn.readLine() // let it run until user presses return
+    Seq(httpBindingFuture, httpsBindingFuture).foreach { _
+      .flatMap(_.unbind())
+      .onComplete(_ ⇒ system.terminate())
+    }
   }
 }
 
