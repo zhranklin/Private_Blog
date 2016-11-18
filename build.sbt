@@ -18,15 +18,17 @@ libraryDependencies ++= {
 //    "com.typesafe.akka"   %%  "akka-actor"          % akkaV,
 //    "com.typesafe.akka"   %%  "akka-testkit"        % akkaV       % "test",
     "com.typesafe.play"   %%  "twirl-api"           % "1.2.1",
-//    "de.heikoseeberger"   %%  "akka-http-json4s"    % "1.10.+",
-    "org.json4s"          %%  "json4s-jackson"      % "3.4.+",
+    "de.heikoseeberger"   %%  "akka-http-json4s"    % "1.10.+",
+    "org.json4s"          %%  "json4s-jackson"      % "3.5.0",
     "org.scalatest"       %%  "scalatest"           % "3.0.+"     % "test",
     "org.jsoup"           %   "jsoup"               % "1.9.2",
     "org.mongodb"         %%  "casbah"              % "3.1.+",
     "org.slf4j"           %   "slf4j-simple"        % "1.7.21",
     "org.scalikejdbc"     %%  "scalikejdbc"         % "2.4.2",
     "com.h2database"      %   "h2"                  % "1.4.+",
-    "com.typesafe.akka"   %% "akka-http-spray-json-experimental" % akkaV
+    "com.typesafe.akka"   %% "akka-http-spray-json-experimental" % akkaV,
+    "com.nulab-inc"       %%  "akka-http-oauth2-provider"        % "1.0.0",
+    "org.apache.httpcomponents" % "httpclient" % "4.5.2"
   )
 }
 

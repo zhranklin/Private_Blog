@@ -35,7 +35,7 @@ case class SolrDoc(tstamp: String, title: String, url: String, content: String) 
 case class SolrQueryResponse(docs: List[SolrDoc])
 case class SolrQueryResult(response: SolrQueryResponse)
 
-trait SolrRoute extends RouteService with JsonSupport {
+trait SolrRoute extends RouteService {
   import ActorImplicits._
   def changeContentType(response: HttpResponse): HttpResponse =
     response.mapEntity(entity ⇒ HttpEntity(`application/json`, entity.dataBytes))
@@ -61,6 +61,7 @@ trait SolrRoute extends RouteService with JsonSupport {
     }
 
   def test(keyword: String) = {
+    import BasicJsonSupport._
     val url = s"http://$solrHost:$solrPort/solr/select?q=${enc(keyword)}&wt=json"
     val request = Get(url)
     val resultFuture =

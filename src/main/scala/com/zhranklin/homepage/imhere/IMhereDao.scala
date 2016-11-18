@@ -1,6 +1,7 @@
 package com.zhranklin.homepage.imhere
 
 import com.mongodb.casbah.Imports.{MongoDBList ⇒ $$, MongoDBObject ⇒ $, _}
+import com.zhranklin.homepage.JsonForMongo._
 import com.zhranklin.homepage.imhere.Model._
 
 import scala.util.Try
@@ -8,27 +9,56 @@ import scala.util.Try
 object PlaceDao {
   private val place = MongoClient()("imhere")("place")
 
-  private def mongoToPlace(m: DBObject) = Place(m.getAs[String]("uuid").get, m.getAs[String]("name").get)
-  def get(uuid: String): Place = place.findOne($("uuid" → uuid)).map(mongoToPlace).get
-  def add(p: Place): Unit = place.insert($(p.getMap: _*))
-  def delete(uuid: String) = place.remove($("uuid" → uuid)).getN > 0
-  def update(uuid: String, p: Place) = place.update($("uuid" → uuid), $(p.getMap:_*)).isUpdateOfExisting
+//  private def mongoToPlace(m: DBObject) = Place(m.getAs[String]("uuid").get, m.getAs[String]("name").get)
+  def get(id: String): Option[Place] = place.findOne($("_id" → id)).map(_.read[Place])
+  def add(p: Place): Unit = place.insert(p.mongo)
+  def delete(id: String) = place.remove($("_id" → id)).getN > 0
+  def update(id: String, p: Place) = place.update($("_id" → id), p.mongo).isUpdateOfExisting
 }
 
 object ItemDao {
   private val item = MongoClient()("imhere")("item")
 
-  private def mongoToItem(m: DBObject) = Item(
-    m.getAs[String]("title").get,
-    m.getAs[String]("type").get,
-    m.getAs[String]("content").get,
-    m.getAs[String]("place").get,
-    m.getAs[ObjectId]("_id").get)
+//  private def mongoToItem1(m: DBObject) = Item(
+//    m.getAs[String]("title").get,
+//    m.getAs[String]("type").get,
+//    m.getAs[String]("content").get,
+//    m.getAs[String]("place").get,
+//    m.getAs[String]("owner").get,
+//    m.getAs[ObjectId]("_id"))
+
+//  private def mongoToItem(m: DBObject) = readMongo[Item](m)
 
   def idTuple(id: String) = "_id" → new ObjectId(id)
 
-  def get(id: String): Item = item.findOne($(idTuple(id))).map(mongoToItem).get
-  def add(i: Item): Unit = Try(item.insert($(i.getMap:_*))).toOption.map(r ⇒ i)
+  def get(id: String): Option[Item] = item.findOne($(idTuple(id))).map(_.read[Item])
+  def getAll(user: User):List[Item] = item.find($("owner" → user.username)).toList.map(_.read[Item])
+  def add(i: Item): Option[ObjectId] = Try(item.insert(i.mongo).getUpsertedId).map(_.asInstanceOf[ObjectId]).toOption
   def delete(id: String) = item.remove($(idTuple(id))).getN > 0
-  def update(id: String, i: Item) = item.update($(idTuple(id)), $(i.getMap:_*)).isUpdateOfExisting
+  def update(id: String, i: Item) = item.update($(idTuple(id)), i.mongo).isUpdateOfExisting
+  def findByPlace(uuid: String, user: User) = {
+    val owners = Set("public") + user.username map (u ⇒ "owner" $eq u)
+    item.find($("place" → uuid) ++ $or(owners.toList: _*)).map(_.read[Item]).toList
+  }
+}
+
+object UserDao {
+  private val user = MongoClient()("imhere")("user")
+
+  def unQuery(un: String) = $("username" → un)
+
+//  private def mongoToUser(m: DBObject) = User(
+//    m.getAs[String]("username").get,
+//    m.getAs[String]("name").get
+//  )
+
+  private def get(un: String): Option[User] = user.findOne(unQuery(un)).map(_.read[User])
+  def get(un: String, v: String ⇒ Boolean): Option[User] = for {
+    mongo ← user.findOne(unQuery(un))
+    pass ← mongo.getAs[String]("password")
+    if v(pass)
+  } yield mongo.read[User]
+  def add(u: UserPass): Unit = Try(user.insert(u.mongo)).toOption.map(r ⇒ u)
+  def delete(un: String) = user.remove(unQuery(un)).getN > 0
+  def update(id: String, i: User) = user.update(unQuery(id), i.mongo).isUpdateOfExisting
 }
