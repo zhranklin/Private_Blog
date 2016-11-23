@@ -50,7 +50,9 @@ trait IMhereRoute extends RouteService {
           }}
         } ~
         (pathEnd & post & entity(as[Item])) { item ⇒
-          val id = ItemDao.add(item).get
+          val idTry = ItemDao.add(item)
+          println(idTry)
+          val id = idTry.get
           complete(item.withId(id))
         } ~
         pathPrefix("at" / Segment) { uuid ⇒ complete {

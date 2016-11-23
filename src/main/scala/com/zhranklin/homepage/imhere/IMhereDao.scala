@@ -33,7 +33,11 @@ object ItemDao {
 
   def get(id: String): Option[Item] = item.findOne($(idTuple(id))).map(_.read[Item])
   def getAll(user: User):List[Item] = item.find($("owner" → user.username)).toList.map(_.read[Item])
-  def add(i: Item): Option[ObjectId] = Try(item.insert(i.mongo).getUpsertedId).map(_.asInstanceOf[ObjectId]).toOption
+  def add(i: Item): Try[ObjectId] = Try{
+    val mongo = i.mongo
+    item.save(mongo)
+    mongo.getAs[ObjectId]("_id").get
+  }
   def delete(id: String) = item.remove($(idTuple(id))).getN > 0
   def update(id: String, i: Item) = item.update($(idTuple(id)), i.mongo).isUpdateOfExisting
   def findByPlace(uuid: String, user: User) = {

@@ -12,7 +12,6 @@ libraryDependencies ++= {
   val akkaV = "2.4.11"
   val akka_httpV = "3.0.0-RC1"
   Seq(
-//    "org.scala-lang"      %   "scala-reflect"       % "2.11.8",
     "com.typesafe.akka"   %%  "akka-http"           % akka_httpV,
 //    "com.typesafe.akka"   %%  "akka-http-testkit"   % akka_httpV  % "test",
 //    "com.typesafe.akka"   %%  "akka-actor"          % akkaV,
@@ -26,8 +25,6 @@ libraryDependencies ++= {
     "org.slf4j"           %   "slf4j-simple"        % "1.7.21",
     "org.scalikejdbc"     %%  "scalikejdbc"         % "2.4.2",
     "com.h2database"      %   "h2"                  % "1.4.193",
-    "com.typesafe.akka"   %% "akka-http-spray-json-experimental" % akkaV,
-    "com.nulab-inc"       %%  "akka-http-oauth2-provider"        % "1.0.0",
     "org.apache.httpcomponents" % "httpclient" % "4.5.2"
   )
 }
