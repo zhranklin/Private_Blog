@@ -45,12 +45,12 @@ trait IMhereRoute extends RouteService {
             pl
           } ~
           (put & entity(as[Item])) { item ⇒ complete {
-            ItemDao.update(bid, item)
+            ItemDao.update(bid, item.withOwner(user.username))
             item
           }}
         } ~
         (pathEnd & post & entity(as[Item])) { item ⇒
-          val idTry = ItemDao.add(item)
+          val idTry = ItemDao.add(item.withOwner(user.username))
           println(idTry)
           val id = idTry.get
           complete(item.withId(id))

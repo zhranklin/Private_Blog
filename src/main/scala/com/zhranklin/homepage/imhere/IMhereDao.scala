@@ -31,18 +31,21 @@ object ItemDao {
 
   def idTuple(id: String) = "_id" → new ObjectId(id)
 
-  def get(id: String): Option[Item] = item.findOne($(idTuple(id))).map(_.read[Item])
-  def getAll(user: User):List[Item] = item.find($("owner" → user.username)).toList.map(_.read[Item])
-  def add(i: Item): Try[ObjectId] = Try{
+  def get(id: String): Option[ItemWithOwner] = item.findOne($(idTuple(id))).map(_.read[ItemWithOwner])
+  def getAll(user: User):List[ItemWithOwner] = {
+    val owners = Set("public") + user.username map (u ⇒ "owner" $eq u)
+    item.find($or(owners.toList: _*)).toList.map(_.read[ItemWithOwner])
+  }
+  def add(i: ItemWithOwner): Try[ObjectId] = Try{
     val mongo = i.mongo
     item.save(mongo)
     mongo.getAs[ObjectId]("_id").get
   }
   def delete(id: String) = item.remove($(idTuple(id))).getN > 0
-  def update(id: String, i: Item) = item.update($(idTuple(id)), i.mongo).isUpdateOfExisting
+  def update(id: String, i: ItemWithOwner) = item.update($(idTuple(id)), i.mongo).isUpdateOfExisting
   def findByPlace(uuid: String, user: User) = {
     val owners = Set("public") + user.username map (u ⇒ "owner" $eq u)
-    item.find($("place" → uuid) ++ $or(owners.toList: _*)).map(_.read[Item]).toList
+    item.find($("place" → uuid) ++ $or(owners.toList: _*)).map(_.read[ItemWithOwner]).toList
   }
 }
 
