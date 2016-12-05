@@ -3,10 +3,6 @@ package com.zhranklin.homepage
 import akka.actor.ActorSystem
 import akka.http.scaladsl.server._
 import akka.stream.ActorMaterializer
-import com.zhranklin.homepage.blog.BlogRoute
-import com.zhranklin.homepage.imhere.IMhereRoute
-import com.zhranklin.homepage.notice.NoticeRoute
-import com.zhranklin.homepage.solr.SolrRoute
 
 trait RouteService extends MyHttpService {
   def myRoute: Route
@@ -24,4 +20,6 @@ object ActorImplicits {
 
 }
 
-trait MyRouteService extends BaseRoute with BlogRoute with SolrRoute with NoticeRoute with IMhereRoute
+trait MyRouteService extends BaseRoute
+  with blog.BlogRoute with solr.SolrRoute with notice.NoticeRoute
+  with imhere.IMhereRoute with im.ImRoute
