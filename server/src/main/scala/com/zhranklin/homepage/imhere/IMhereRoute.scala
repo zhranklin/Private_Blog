@@ -13,13 +13,13 @@ trait IMhereRoute extends RouteService {
     (pathPrefix("imh") & authenticateBasic("imh security", iMhereAuthenticator)) { user ⇒
       pathPrefix("place") {
         pathPrefix(Segment) { uuid ⇒
-          (get & complete _) {
-            PlaceDao.get(uuid).get
+          get {
+            complete(PlaceDao.get(uuid).get)
           } ~
-          (delete & complete _) {
+          delete {
             val pl = PlaceDao.get(uuid).get
             PlaceDao.delete(uuid)
-            pl
+            complete(pl)
           } ~
           (put & entity(as[Place])) { pl ⇒ complete {
             PlaceDao.update(uuid, pl)
@@ -36,13 +36,13 @@ trait IMhereRoute extends RouteService {
           complete(ItemDao.getAll(user))
         } ~
         pathPrefix("[a-fA-F0-9]{24}".r) { bid ⇒
-          (get & complete _) {
-            ItemDao.get(bid).get
+          get {
+            complete(ItemDao.get(bid).get)
           } ~
-          (delete & complete _) {
+          delete {
             val pl = ItemDao.get(bid).get
             ItemDao.delete(bid)
-            pl
+            complete(pl)
           } ~
           (put & entity(as[Item])) { item ⇒ complete {
             ItemDao.update(bid, item.withOwner(user.username))

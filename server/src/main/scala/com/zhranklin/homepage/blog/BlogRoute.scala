@@ -16,8 +16,8 @@ trait BlogRoute extends RouteService {
         html.index.render(s"Zhranklin's blog - $section", section, articleList(Some(section)))
       }
     } ~
-    (path("") & complete _) {
-      html.index.render("Zhranklin's blog - home", "home", articleList(None))
+    path("") {
+      complete(html.index.render("Zhranklin's blog - home", "home", articleList(None)))
     } ~
     path("refresh") {
       complete {
@@ -64,8 +64,8 @@ trait BlogRoute extends RouteService {
             html.editor.render(ar)
         }
       } ~
-      (pathEnd & complete _) {
-        html.editor.render(None)
+      (pathEnd) {
+        complete(html.editor.render(None))
       }
     } ~
     path("2048" / Segment) { text ⇒
