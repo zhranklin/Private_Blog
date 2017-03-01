@@ -7,7 +7,6 @@ import javax.net.ssl._
 import akka.http.scaladsl._
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
-import com.zhranklin.homepage.scalikejdbc.SqlTest
 
 import scala.concurrent.duration._
 import scala.io.{Source, StdIn}
@@ -18,14 +17,13 @@ object Boot extends App with MyRouteService {
 
   implicit val timeout = Timeout(5.seconds)
 
-  val test = SqlTest
-
   val conf = ConfigFactory.load().getConfig("settings.server")
-  val httpBindingFuture = Http().bindAndHandle(myRoute, "localhost", conf.getInt("http_port"))
+  val host = conf.getString("host")
+  val httpBindingFuture = Http().bindAndHandle(myRoute, host, conf.getInt("http_port"))
   val httpsBindingFuture =
-    Http().bindAndHandle(myRoute, "localhost", conf.getInt("https_port"), SSLConfig.https)
-  println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
-  if (System.getProperty("product") == null) {
+    Http().bindAndHandle(myRoute, host, conf.getInt("https_port"), SSLConfig.https)
+  println(s"Server online at http://$host:8080/\nPress RETURN to stop...")
+  if (System.getProperty("dev") != null) {
     StdIn.readLine() // let it run until user presses return
     Seq(httpBindingFuture, httpsBindingFuture).foreach { _
       .flatMap(_.unbind())

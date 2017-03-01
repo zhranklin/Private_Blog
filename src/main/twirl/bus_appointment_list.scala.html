@@ -1,0 +1,88 @@
+@import com.zhranklin.homepage.bus.Models.Appointment
+@import com.zhranklin.homepage.bus.RouteDao
+@(title: String)(appoints: Seq[Appointment])
+@bus_base(title) {
+    <div class="row">
+      <div class="col-md-6">
+        <form action="#" method="get">
+        <div class="form-group">
+          <input type="date" name="date" class="form-control"/>
+          <small id="emailHelp" class="form-text text-muted">可更换预约日期</small>
+        </div>
+        <div class="form-group">
+          <select class="form-control" name="route">
+            <option value="-1">所有路线</option>
+            @for(route ← RouteDao.all) {
+              <option value="@route.id">@route.from → @route.to</option>
+            }
+          </select>
+          <small id="emailHelp" class="form-text text-muted">可选择路线</small>
+        </div>
+        <button type="submit" class="btn btn-primary">确认</button>
+        </form>
+      </div>
+      <div class="col-md-6">
+        <form action="/bus/arrange">
+          <h1>排班测试</h1>
+          <div class="form-group">
+            <input type="datetime-local" name="from" class="form-control"/>
+            <small id="emailHelp" class="form-text text-muted">起始时间</small>
+          </div>
+          <div class="form-group">
+            <input type="datetime-local" name="to" class="form-control"/>
+            <small id="emailHelp" class="form-text text-muted">结束时间</small>
+          </div>
+          <button type="submit" class="btn btn-primary">确认</button>
+        </form>
+      </div>
+    </div>
+} {
+  <div class="row">
+    <form action="/bus/appoint" method="post">
+      <div class="col-md-4">
+        <div class="card card-outline-success">
+          <div class="card-block">
+            <h4 class="card-title">预约其他时间</h4>
+            <h6 class="card-subtitle text-muted">时间精确到5分钟为间隔，若预约人数少于20人，则向后顺延，直到整点或半点发车</h6>
+          </div>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <select class="form-control" name="route">
+              @for(route ← RouteDao.all) {
+                <option value="@route.id">@route.from → @route.to</option>
+              }
+              </select>
+            </li>
+            <li class="list-group-item"><input type="datetime-local" name="time" /></li>
+            <li class="list-group-item"><button type="submit" class="btn btn-success" width="100%">我要预约</button></li>
+          </ul>
+        </div>
+      </div>
+    </form>
+    @for(app ← appoints) {
+      <form action="/bus/appoint" method="post">
+        <input type="hidden" name="time" value="@app.app_time">
+        <input type="hidden" name="route" value="@app.route.id">
+        <div class="col-md-4">
+          <div class="card card-outline-success">
+            <div class="card-block">
+              <h4 class="card-title">@app.route.to</h4>
+              <h6 class="card-subtitle text-muted">@app.route.from → @app.route.to</h6>
+            </div>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item">始发: <b>@app.route.from</b></li>
+              <li class="list-group-item">终点: <b>@app.route.to</b></li>
+              <li class="list-group-item">日期: <b>@app.app_time.toLocalDate</b></li>
+              <li class="list-group-item">时间: <b>@{
+                val time = app.app_time.toLocalTime;
+                f"${time.getHourOfDay}:${time.getMinuteOfHour}%02d"
+              }</b></li>
+              <li class="list-group-item">预约数: <b>@app.count</b></li>
+              <li class="list-group-item"><button type="submit" class="btn btn-success">我要预约</button></li>
+            </ul>
+          </div>
+        </div>
+      </form>
+    }
+  </div>
+}
