@@ -1,0 +1,24 @@
+package com.zhranklin.homepage
+
+import java.util.Date
+
+import com.zhranklin.homepage.Dtos._
+
+/**
+ * Created by Zhranklin on 2017/3/31.
+ */
+object Dtos {
+  case class ArticleEdit(title: String, author: String, section: String,
+                         mdown: Option[String] = None, html: String = "", abs: String, tags: List[String])
+  case class ArticleItem(id: String, title: String, author: String, create_time: String, abs: String, tags: List[String])
+
+}
+
+object Apis {
+
+  trait ArticleApi {
+    def list(): List[ArticleItem]
+    def get(id: String): Option[ArticleEdit]
+  }
+
+}

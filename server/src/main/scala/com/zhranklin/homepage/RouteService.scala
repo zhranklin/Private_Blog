@@ -21,7 +21,7 @@ object ActorImplicits {
 
 }
 
-trait MyRouteService extends BaseRoute
+trait MyRouteService extends BaseRoute with react.ReactRoute
   with blog.BlogRoute with solr.SolrRoute with notice.NoticeRoute
   with imhere.IMhereRoute with im.ImRoute with bus.BusRoute
   with ExceptionHandlerRoute
