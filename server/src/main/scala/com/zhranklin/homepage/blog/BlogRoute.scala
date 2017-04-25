@@ -2,48 +2,15 @@ package com.zhranklin.homepage.blog
 
 import java.util.Date
 
-import akka.http.scaladsl.model.{ContentType, HttpEntity}
 import com.mongodb.casbah.Imports.{MongoDBList ⇒ $$, MongoDBObject ⇒ $, _}
-import com.zhranklin.homepage.Apis.ArticleApi
-import com.zhranklin.homepage.Dtos.{ArticleEdit, ArticleItem}
 import com.zhranklin.homepage.RouteService
 import com.zhranklin.homepage.blog.db._
 import org.bson.types.ObjectId
-import upickle.Js
-import upickle.default._
 
 import scala.util.Try
 
-trait BlogRoute extends RouteService with ArticleApi {
-  import com.zhranklin.homepage.ActorImplicits._
-
-  def asItem(a: Article) = ArticleItem(a.id.get.toHexString, a.title, a.author, a.create_time.dateString, a.abs, a.tags)
-
-  def asEdit(a: Article) = ArticleEdit(a.title, a.author, a.section, a.mdown, a.html, a.abs, a.tags)
-
-  def list() = articleList(None).map(asItem)
-
-  def get(id: String): Option[ArticleEdit] = for {
-    bid ← Try(new ObjectId(id)).toOption //验证id这个字符串是否符合ObjectId构造器的要求,如果不符合则可认为是新文章
-    mongo ← articles.findOneByID(bid)
-  } yield asEdit(new Article(mongo))
-
+trait BlogRoute extends RouteService {
   abstract override def myRoute = super.myRoute ~
-    (post & path("api" / Segments)) { s ⇒
-      (extract(_.request.entity match {
-        case HttpEntity.Strict(nb: ContentType.NonBinary, data) =>
-          data.decodeString(nb.charset.value)
-      })) { e ⇒
-        complete {
-          Autowire.route[ArticleApi](this)(
-            autowire.Core.Request(
-              s,
-              upickle.json.read(e).asInstanceOf[Js.Obj].value.toMap
-            )
-          ).map(upickle.json.write(_))
-        }
-      }
-    } ~
     path("section" / Segment) { section ⇒
       complete {
         html.index.render(s"Zhranklin's blog - $section", section, articleList(Some(section)))
@@ -107,11 +74,6 @@ trait BlogRoute extends RouteService with ArticleApi {
         html.m2048.render(textList)
       }
     }
-
-  object Autowire extends autowire.Server[Js.Value, Reader, Writer] {
-    def read[Result: Reader](p: Js.Value) = upickle.default.readJs[Result](p)
-    def write[Result: Writer](r: Result) = upickle.default.writeJs(r)
-  }
 
   private def getCreateTimeAndBid(id: String): (Option[Date], Option[ObjectId]) = {
     val timeAndId = for {

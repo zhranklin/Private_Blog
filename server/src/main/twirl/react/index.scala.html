@@ -8,9 +8,12 @@
         <link rel="stylesheet" href="/css/bootstrap.min.css">
         <link rel="stylesheet" href="/css/tether-theme-basic.min.css">
         <link rel="stylesheet" href="/css/style.css">
+        <link rel="stylesheet" href="/css/simplemde.min.css">
     </head>
     <body>
         <div id="root"></div>
+        <div id="root1"></div>
         @scalajs.html.scripts("client", name => s"/assets/$name", name => getClass.getResource(s"/public/$name") != null)
+        <script type="text/javascript" src="//localhost:12345/workbench.js"></script>
     </body>
 </html>

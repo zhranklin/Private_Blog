@@ -1,7 +1,5 @@
 package com.zhranklin.homepage
 
-import java.util.Date
-
 import com.zhranklin.homepage.Dtos._
 
 /**
@@ -15,10 +13,11 @@ object Dtos {
 }
 
 object Apis {
-
+  
   trait ArticleApi {
     def list(): List[ArticleItem]
     def get(id: String): Option[ArticleEdit]
+    def save(id: Option[String], article: ArticleEdit)
   }
 
 }

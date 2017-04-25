@@ -6,7 +6,6 @@ import com.zhranklin.homepage.RouteService
 import com.zhranklin.homepage.bus.Models._
 import org.joda.time._
 
-import scala.concurrent.Future
 import scala.util.Try
 
 trait BusRoute extends RouteService {
@@ -26,14 +25,6 @@ trait BusRoute extends RouteService {
   }
 
   def dateTimeTable(date: LocalDate): Set[LocalDateTime] = timeTable.map(date.toLocalDateTime)
-
-  import scala.concurrent.ExecutionContext.Implicits._
-  Future {
-    while(true) {
-      println("hello")
-      Thread.sleep(10 * 1000)
-    }
-  }
 
   abstract override def myRoute = super.myRoute ~
     (pathPrefix("bus") & authenticateBasic("bus security", busAuthenticator)) { user ⇒

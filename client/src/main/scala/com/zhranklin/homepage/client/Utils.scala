@@ -1,5 +1,6 @@
 package com.zhranklin.homepage.client
 
+import org.scalajs.dom
 import org.scalajs.dom.ext.Ajax
 import org.scalajs.jquery.jQuery
 import upickle._
@@ -11,8 +12,15 @@ import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 /**
  * Created by Zhranklin on 2017/3/31.
  */
+object globalObj {
+  val JsObj = scala.scalajs.js.Dynamic
+}
 trait Imports {
   val $ = jQuery
+  val JsObj = globalObj.JsObj
+  val JS = JsObj.global
+  val document = org.scalajs.dom.document
+  val window = org.scalajs.dom.window
 }
 
 object Imports extends Imports
