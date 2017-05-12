@@ -34,8 +34,6 @@ lazy val server = (project in file("server")).settings(
     "org.jsoup"         %  "jsoup"            % "1.9.2"     ::
     "org.mongodb"       %% "casbah"           % "3.1.1"     ::
     "org.slf4j"         %  "slf4j-simple"     % "1.7.21"    ::
-    "org.scalikejdbc"   %% "scalikejdbc"      % "3.0.0-RC2" ::
-    "com.h2database"    %  "h2"               % "1.4.193"   ::
     "org.apache.httpcomponents" % "httpclient"% "4.5.2"     ::
     "com.vmunier"       %% "scalajs-scripts"  % "1.1.0"     ::
 //    jsDeps.highlightjs  %  "provided"         ::
@@ -53,8 +51,6 @@ lazy val client = (project in file("client")).settings(
   libraryDependencies ++=
     "org.scala-js"             %%% "scalajs-dom"    % "0.9.1"      ::
     "be.doeraene"              %%% "scalajs-jquery" % "0.9.1"      ::
-    "com.lihaoyi"              %%% "scalarx"        % "0.3.2"      ::
-    "com.lihaoyi"              %%% "scalatags"      % "0.6.3"      ::
     "com.github.japgolly.scalajs-react" %%% "core"  % v.reactScala ::
     "com.github.japgolly.scalajs-react" %%% "extra" % v.reactScala ::
     Nil,
@@ -68,7 +64,7 @@ lazy val client = (project in file("client")).settings(
     ("org.webjars" % "bootstrap" % v.bs     / "bootstrap.js" minified "bootstrap.min.js" dependsOn ("jquery.js", "tether.js")) ::
     ("org.webjars" % "jquery-ui" % "1.12.1" / "jquery-ui.js" minified "jquery-ui.min.js" dependsOn "jquery.js")        ::
 //    (jsDeps.highlightjs /   "highlight.js"           minified "highlight.min.js"         dependsOn "highlight.js")     ::
-    (jsDeps.simplemde   /   "simplemde.min.js"       minified "simplemde.min.js")        ::
+    (jsDeps.simplemde   /   "debug/simplemde.js"       minified "simplemde.min.js")        ::
     (jsDeps.reactJs     /   "react-with-addons.js"   minified "react-with-addons.min.js" commonJSName "React")         ::
     (jsDeps.reactJs     /   "react-dom.js"           minified "react-dom.min.js"         commonJSName "ReactDOM"       dependsOn "react-with-addons.js") ::
     (jsDeps.reactJs     /   "react-dom-server.js"    minified "react-dom-server.min.js"  commonJSName "ReactDOMServer" dependsOn "react-dom.js")         ::
