@@ -1,13 +1,15 @@
 package com.zhranklin.homepage.client
 
 import japgolly.scalajs.react.component.Scala.BackendScope
-import japgolly.scalajs.react.component.builder.Lifecycle.StateRW
 import japgolly.scalajs.react.extra.{Listenable, OnUnmount}
 import japgolly.scalajs.react.{Children, CtorType, ReactEventTypes, vdom}
+
+import scalaz.Alpha.B
 
 /**
  * Created by zhranklin on 2017/5/10.
  */
+package object components extends ComponentUtils
 trait ComponentUtils extends vdom.PackageBase with ReactEventTypes {
   import vdom.{HtmlAttrAndStyles, HtmlTags}
 
@@ -29,14 +31,21 @@ trait ComponentUtils extends vdom.PackageBase with ReactEventTypes {
 
   def handleInput[P, S]($: BackendScope[P, S])(mod: String ⇒ S ⇒ S) =
     (e: ReactEventFromInput) ⇒ Callback(e.persist()) >> $.modState(mod(e.target.value))
+  type StateW[P, S, B] = japgolly.scalajs.react.component.builder.Lifecycle.StateW[P, S, B]
 
   object Listenable {
     def listen[P, C <: Children, S, B <: OnUnmount, A](listenable: P => Listenable[A],
-                                                       makeListener: StateRW[P, S, B] => A => Callback): ScalaComponent.Config[P, C, S, B] =
+                                                       makeListener: StateW[P, S, B] => A => Callback): ScalaComponent.Config[P, C, S, B] =
       OnUnmount.install[P, C, S, B] andThen
         (_.componentDidMount($ => listenable($.props).register(makeListener($)) >>= $.backend.onUnmount)) andThen
-        (_.componentWillReceiveProps($ ⇒ listenable($.nextProps).register(makeListener($)) >>= $.backend.onUnmount))
+        (_.componentDidUpdate($ ⇒ listenable($.currentProps).register(makeListener($)) >>= $.backend.onUnmount))
 
+  }
+
+  object DidRender {
+    def did_P[P, C <: Children, S, B](f: P ⇒ Callback): ScalaComponent.Config[P, C, S, B] =
+      _.componentDidMount($ ⇒ f($.props))
+        .componentDidUpdate($ ⇒ f($.currentProps))
   }
 
   implicit class CallbackOption[T](opt: Option[T]) {
@@ -44,5 +53,3 @@ trait ComponentUtils extends vdom.PackageBase with ReactEventTypes {
   }
 
 }
-
-package object components extends ComponentUtils

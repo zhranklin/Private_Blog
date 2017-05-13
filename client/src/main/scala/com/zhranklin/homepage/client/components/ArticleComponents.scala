@@ -73,7 +73,7 @@ object ArticleComponents {
         val html = JS.marked(article.mdown.get).asInstanceOf[String]
         <.div(^.dangerouslySetInnerHtml := html): VdomElement
       }.getOrElse(<.div(<.p("未找到该文章"))))
-      .componentDidMount(_.props.map(_.title).foreachCb(sender.heading) >> highlight)
+      .configure(DidRender.did_P(_.map(_.title).foreachCb(sender.heading) >> highlight))
       .build
 
     def apply(id: String) = MainApp.Body(

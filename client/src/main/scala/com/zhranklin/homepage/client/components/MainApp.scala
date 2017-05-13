@@ -1,7 +1,6 @@
 package com.zhranklin.homepage.client.components
 
 import japgolly.scalajs.react.component.Scala.BackendScope
-import japgolly.scalajs.react.component.builder.Lifecycle.StateRW
 import japgolly.scalajs.react.extra.router._
 import japgolly.scalajs.react.extra.{Broadcaster, OnUnmount}
 
@@ -72,7 +71,7 @@ object MainApp {
     }
     .build
 
-  def handleEvent[B] = ($: StateRW[Props, State, B]) ⇒ (e: Event) ⇒ e match {
+  def handleEvent[B] = ($: StateW[Props, State, B]) ⇒ (e: Event) ⇒ e match {
     case Event.ChangeHeading(heading) ⇒ $.modState(_.copy(heading = heading))
   }
 
