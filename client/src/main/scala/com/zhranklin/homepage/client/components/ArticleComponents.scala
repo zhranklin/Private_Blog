@@ -6,6 +6,7 @@ import com.zhranklin.homepage.Dtos.{ArticleEdit, ArticleItem}
 import com.zhranklin.homepage.client._
 import japgolly.scalajs.react.component.Scala.BackendScope
 import japgolly.scalajs.react.extra.router.RouterCtl
+import org.scalajs.dom
 
 import scalaz._
 
@@ -56,18 +57,30 @@ object ArticleComponents {
     )
   }
 
-  def detail(id: String) = {
+  object detail {
     val sender = MainApp.broadcaster
-    val body = AsyncVdom.future(
-      MyClient[ArticleApi].get(id).call().map {
-        _.map { a ⇒
-          sender.heading(a.title)
-          val html = JS.marked(a.mdown.get).asInstanceOf[String]
-          <.div(^.dangerouslySetInnerHtml := html): VdomElement
-        }.getOrElse(<.div(<.p("未找到该文章")))
+
+    val highlight = Callback {
+        window.console.log("bbb")
+        $("pre code").each{ (block: dom.Element) ⇒
+          window.console.log(block)
+          JS.hljs.highlightBlock(block)
+        }
       }
-    )
-    MainApp.Body(body, sender)
+
+    val comp = ScalaComponent.builder[Option[ArticleEdit]]("Detail")
+      .render_P (_.map { article ⇒
+        val html = JS.marked(article.mdown.get).asInstanceOf[String]
+        <.div(^.dangerouslySetInnerHtml := html): VdomElement
+      }.getOrElse(<.div(<.p("未找到该文章"))))
+      .componentDidMount(_.props.map(_.title).foreachCb(sender.heading) >> highlight)
+      .build
+
+    def apply(id: String) = MainApp.Body(
+      AsyncVdom.future(
+        MyClient[ArticleApi].get(id).call().map {comp(_)}
+      )
+      , sender)
   }
 
   object editor {
@@ -117,14 +130,14 @@ object ArticleComponents {
       .initialState[State](init)
       .renderBackend[Backend]
       .componentWillMount { $ ⇒
-        $.props.map { id ⇒
+        $.props.foreachCb { id ⇒
           Callback.future {
             MyClient[ArticleApi].get(id).call().map { edit ⇒
-              sender.heading(edit.map(_.title).getOrElse("Editing"))
+              sender.heading(edit.map(_.title).getOrElse("Editing")) >>
               $.setState(edit.map(State(_, true)).getOrElse(init))
             }
           }
-        }.getOrElse(Callback.empty)
+        }
       }
       .componentDidMount { cdm ⇒
         Callback {
@@ -147,11 +160,11 @@ object ArticleComponents {
           })
         }
       }
-      .componentDidUpdate { cdm ⇒
+      .componentDidUpdate { $ ⇒
+        val (title, md) = content.get($.currentState)
+        sender.heading(title) >>
         Callback {
-          val (title, md) = content.get(cdm.currentState)
-          sender.heading(title)
-          if (cdm.currentState.loadMarkdown) {
+          if ($.currentState.loadMarkdown) {
             mde.value(s"# $title\n$md")
           }
         }

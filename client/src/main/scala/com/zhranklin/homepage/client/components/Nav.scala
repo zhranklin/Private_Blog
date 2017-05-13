@@ -23,7 +23,7 @@ object Nav {
       <.a(^.cls := "navbar-brand", ctl setOnClick Page.Home, "Zhranklin's Blog", ^.href := "#"),
       <.ul(^.cls := "nav navbar-nav",
         item(title.home, Page.Home),
-        item(title.tech, Page.Tech),
+//        item(title.tech, Page.Tech),
         item(title.search, Page.Search),
         item(title.notice, Page.Notice)))
   }

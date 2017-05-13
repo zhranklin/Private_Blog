@@ -1,15 +1,17 @@
 package com.zhranklin.homepage.client
 
 import japgolly.scalajs.react.component.Scala.BackendScope
+import japgolly.scalajs.react.component.builder.Lifecycle.StateRW
 import japgolly.scalajs.react.extra.{Listenable, OnUnmount}
-import japgolly.scalajs.react.{Children, CtorType, ReactEventTypes, ScalaComponentConfig, vdom}
+import japgolly.scalajs.react.{Children, CtorType, ReactEventTypes, vdom}
 
 /**
  * Created by zhranklin on 2017/5/10.
  */
 trait ComponentUtils extends vdom.PackageBase with ReactEventTypes {
-  implicit val executionContext = scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
   import vdom.{HtmlAttrAndStyles, HtmlTags}
+
+  implicit val executionContext = scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
   val < = HtmlTags
   val ^ = HtmlAttrAndStyles
   val ScalaComponent = japgolly.scalajs.react.ScalaComponent
@@ -24,17 +26,23 @@ trait ComponentUtils extends vdom.PackageBase with ReactEventTypes {
   val JS = JsObj.global
   val document = org.scalajs.dom.document
   val window = org.scalajs.dom.window
+
   def handleInput[P, S]($: BackendScope[P, S])(mod: String ⇒ S ⇒ S) =
     (e: ReactEventFromInput) ⇒ Callback(e.persist()) >> $.modState(mod(e.target.value))
-  object Listenable {
 
+  object Listenable {
     def listen[P, C <: Children, S, B <: OnUnmount, A](listenable: P => Listenable[A],
-                                                       makeListener: ScalaComponent.Lifecycle.StateRW[P, S, B] => A => Callback): ScalaComponentConfig[P, C, S, B] =
+                                                       makeListener: StateRW[P, S, B] => A => Callback): ScalaComponent.Config[P, C, S, B] =
       OnUnmount.install[P, C, S, B] andThen
         (_.componentDidMount($ => listenable($.props).register(makeListener($)) >>= $.backend.onUnmount)) andThen
         (_.componentWillReceiveProps($ ⇒ listenable($.nextProps).register(makeListener($)) >>= $.backend.onUnmount))
 
   }
+
+  implicit class CallbackOption[T](opt: Option[T]) {
+    def foreachCb(cb: T ⇒ Callback) = opt.map(cb).getOrElse(Callback.empty)
+  }
+
 }
 
 package object components extends ComponentUtils

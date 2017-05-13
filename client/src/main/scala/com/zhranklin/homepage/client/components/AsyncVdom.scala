@@ -13,7 +13,7 @@ object AsyncVdom {
   class Backend($: BackendScope[Props, State]) extends OnUnmount
 
   val comp = ScalaComponent.builder[Props]("AsyncVdom")
-    .initialState_P(_._1)
+    .initialStateFromProps(_._1)
     .backend(new Backend(_))
     .render_S(identity)
     .configure(Listenable.listen(_._2, $ ⇒ $.setState(_: State)))

@@ -2,6 +2,7 @@ package com.zhranklin.homepage.blog
 
 import java.util.Date
 
+import akka.http.scaladsl.model.StatusCodes
 import com.mongodb.casbah.Imports.{MongoDBList ⇒ $$, MongoDBObject ⇒ $, _}
 import com.zhranklin.homepage.RouteService
 import com.zhranklin.homepage.blog.db._
@@ -17,7 +18,7 @@ trait BlogRoute extends RouteService {
       }
     } ~
     path("") {
-      complete(html.index.render("Zhranklin's blog - home", "home", articleList(None)))
+      redirect("/react/", StatusCodes.MovedPermanently)
     } ~
     path("refresh") {
       complete {

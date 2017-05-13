@@ -1,7 +1,7 @@
 package com.zhranklin.homepage.client.components
 
 import japgolly.scalajs.react.component.Scala.BackendScope
-import japgolly.scalajs.react.component.ScalaBuilder.Lifecycle.StateRW
+import japgolly.scalajs.react.component.builder.Lifecycle.StateRW
 import japgolly.scalajs.react.extra.router._
 import japgolly.scalajs.react.extra.{Broadcaster, OnUnmount}
 
@@ -10,10 +10,12 @@ import japgolly.scalajs.react.extra.{Broadcaster, OnUnmount}
  */
 object MainApp {
 
-  def broadcaster = new Broadcaster[Event] {
-    def heading(h: VdomElement) = broadcast(Event.ChangeHeading(h)).runNow()
-    def heading(h: String) = broadcast(Event.ChangeHeading(generalHeading(h))).runNow()
+  class BC extends Broadcaster[Event] {
+    def heading(h: VdomElement): Callback = broadcast(Event.ChangeHeading(h))
+    def heading(h: String): Callback = broadcast(Event.ChangeHeading(generalHeading(h)))
   }
+
+  def broadcaster = new BC
 
   JS.marked.setOptions(JsObj.literal(
     renderer = JsObj.newInstance(JS.marked.Renderer)(),
@@ -33,7 +35,7 @@ object MainApp {
   class Backend($: BackendScope[Props, State]) extends OnUnmount
 
   val comp = ScalaComponent.builder[Props]("MainApp")
-    .initialState_P(p ⇒ State(p.heading))
+    .initialStateFromProps(p ⇒ State(p.heading))
     .backend(new Backend(_))
     .render_PS { (props, state) ⇒
       <.div(
@@ -55,7 +57,7 @@ object MainApp {
               <.div(^.cls := "col-sm-12",
                 <.p(^.cls := "pull-left",
                   "Powered by",
-                  <.a(^.href := "http://www.aliyun.com/?ref=3", ^.target := "_blank", "阿里云"))),
+                  <.a(^.href := "http://www.aliyun.com/?ref=3", ^.target := "_blank", "阿里云sss"))),
               <.div(^.cls := "col-sm-12",
                 <.div(^.width := 300.px, ^.margin := "0 auto", ^.padding := "20px 0",
                   <.a(^.target := "_blank", ^.href := "http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=33032802000103",
@@ -100,6 +102,12 @@ object MainApp {
       apply(ctl, navTitle.home, generalHeading("article"), ArticleComponents.sidebar(ctl), ArticleComponents.detail(id))
     case Page.Edit(id) ⇒
       apply(ctl, navTitle.home, generalHeading("edit"), ArticleComponents.sidebar(ctl), ArticleComponents.editor(id))
+    case Page.Search ⇒
+      window.location.href = "/solr"
+      null
+    case Page.Notice ⇒
+      window.location.href = "/notice"
+      null
   }
 
 
