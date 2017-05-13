@@ -16,7 +16,6 @@ object Page {
   case object Home extends Page
   case object Tech extends Page
   case class Article(id: String) extends Page
-  case object NewEdit extends Page
   case class Edit(id: Option[String]) extends Page
   case object Search extends Page
   case object Notice extends Page

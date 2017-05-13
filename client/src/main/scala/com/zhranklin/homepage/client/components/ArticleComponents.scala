@@ -6,6 +6,7 @@ import com.zhranklin.homepage.Dtos.{ArticleEdit, ArticleItem}
 import com.zhranklin.homepage.client._
 import japgolly.scalajs.react.component.Scala.BackendScope
 import japgolly.scalajs.react.extra.router.RouterCtl
+import japgolly.scalajs.react.vdom
 import org.scalajs.dom
 
 import scalaz._
@@ -14,6 +15,13 @@ import scalaz._
  * Created by Zhranklin on 2017/3/31.
  */
 object ArticleComponents {
+
+  def articleHeading(title: String, tags: List[String]): VdomElement =
+  <.div(
+    <.h1(title),
+      <.p(^.cls := "pull-left",
+        tags.toTagMod(tag ⇒ vdom.TagMod(<.span(^.cls := "label label-default", tag), " "))
+      ))
 
   def index(ctl: RouterCtl[Page]) = {
     def item(a: ArticleItem, readMoreLink: TagMod) =
@@ -73,7 +81,7 @@ object ArticleComponents {
         val html = JS.marked(article.mdown.get).asInstanceOf[String]
         <.div(^.dangerouslySetInnerHtml := html): VdomElement
       }.getOrElse(<.div(<.p("未找到该文章"))))
-      .configure(DidRender.did_P(_.map(_.title).foreachCb(sender.heading) >> highlight))
+      .configure(DidRender.did_P(_.map(a ⇒ articleHeading(a.title, a.tags)).foreachCb(sender.heading) >> highlight))
       .build
 
     def apply(id: String) = MainApp.Body(
@@ -87,12 +95,14 @@ object ArticleComponents {
 
     val sender = MainApp.broadcaster
 
-    case class State(edit: ArticleEdit, loadMarkdown: Boolean)
+    case class State(edit: ArticleEdit, tagsText: String, loadMarkdown: Boolean)
     type Props = Option[String]
+    def mkTagsText(tags: List[String]) = tags mkString ", "
 
-    val init = State(ArticleEdit("", "Zhranklin", "tech", Some(""), "", "", Nil), true)
-    val stateLens = Lens.lensu[State, ArticleEdit]((s, a) ⇒ State(a, false), _.edit)
-    val tagsLens = stateLens andThen Lens.lensu[ArticleEdit, List[String]]((a, s) ⇒ a.copy(tags = s), _.tags)
+    val init = State(ArticleEdit("", "Zhranklin", "tech", Some(""), "", "", Nil), "", true)
+    val stateLens = Lens.lensu[State, ArticleEdit]((s, a) ⇒ s.copy(edit = a, loadMarkdown = false), _.edit)
+    val tagTextLens = Lens.lensu[State, String]((s, tt) ⇒ s.copy(tagsText = tt, loadMarkdown = false), _.tagsText)
+    val tagLens = stateLens andThen Lens.lensu[ArticleEdit, List[String]]((a, s) ⇒ a.copy(tags = s), _.tags)
     val section = stateLens andThen Lens.lensu[ArticleEdit, String]((a, s) ⇒ a.copy(section = s), _.section)
     val content = stateLens andThen Lens.lensu[ArticleEdit, (String, String)]((a, s) ⇒ a.copy(title = s._1, mdown = Some(s._2)), a ⇒ (a.title, a.mdown.get))
     var mde: JsObj = _
@@ -113,9 +123,13 @@ object ArticleComponents {
             <.div(^.cls :="row",
               <.div(^.cls :="col-md-5",
                 <.label(^.`for` := "tags", "标签："),
-                <.input(^.`type` := "text", ^.value := tagsLens.get(state) mkString ", ",
-                  ^.onChange ==> handleInput($)(text ⇒ tagsLens.set(_, text :: Nil)),
-                  ^.onBlur ==> handleInput($)(text ⇒ tagsLens.set(_, text.split("""\s*,\s*""").toList.map(_.trim).distinct.sorted.filterNot(_==""))))),
+                <.input(^.`type` := "text", ^.value := state.tagsText,
+                  ^.onChange ==> handleInput($)(text ⇒
+                    ((_: State).copy(tagsText = text))
+                      andThen (tagLens.set(_, text.split("""\s*,\s*""").toList))),
+                  ^.onBlur ==> handleInput($)(text ⇒
+                    (tagLens.mod(_.map(_.trim).distinct.sorted.filterNot(_==""), _: State))
+                      andThen (st ⇒ tagTextLens.set(st, mkTagsText(tagLens.get(st))))))),
               <.div(^.cls := "col-md-5",
                 <.label(^.`for` := "tags", "板块："),
                 <.input(^.`type` := "text", ^.value := section.get(state),
@@ -134,7 +148,7 @@ object ArticleComponents {
           Callback.future {
             MyClient[ArticleApi].get(id).call().map { edit ⇒
               sender.heading(edit.map(_.title).getOrElse("Editing")) >>
-              $.setState(edit.map(State(_, true)).getOrElse(init))
+              $.setState(edit.map(a ⇒ State(a, mkTagsText(a.tags), true)).getOrElse(init))
             }
           }
         }
@@ -162,7 +176,7 @@ object ArticleComponents {
       }
       .componentDidUpdate { $ ⇒
         val (title, md) = content.get($.currentState)
-        sender.heading(title) >>
+        sender.heading(articleHeading(title, tagLens.get($.currentState))) >>
         Callback {
           if ($.currentState.loadMarkdown) {
             mde.value(s"# $title\n$md")

@@ -98,7 +98,7 @@ object MainApp {
     case Page.Home ⇒
       apply(ctl, navTitle.home, generalHeading("Zhranklin's Blog - Index"), ArticleComponents.sidebar(ctl), ArticleComponents.index(ctl))
     case Page.Article(id) ⇒
-      apply(ctl, navTitle.home, generalHeading("article"), ArticleComponents.sidebar(ctl), ArticleComponents.detail(id))
+      apply(ctl, navTitle.home, generalHeading("loading..."), ArticleComponents.sidebar(ctl), ArticleComponents.detail(id))
     case Page.Edit(id) ⇒
       apply(ctl, navTitle.home, generalHeading("edit"), ArticleComponents.sidebar(ctl), ArticleComponents.editor(id))
     case Page.Search ⇒

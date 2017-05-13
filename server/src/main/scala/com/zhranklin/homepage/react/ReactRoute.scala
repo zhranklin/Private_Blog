@@ -56,7 +56,10 @@ trait ReactRoute extends RouteService with ArticleApi {
 
   def asEdit(a: Article) = ArticleEdit(a.title, a.author, a.section, a.mdown, a.html, a.abs, a.tags)
 
-  def fromEdit(id: Option[ObjectId], a: ArticleEdit) = Article(a.title, a.author, a.section, a.mdown, a.html, a.abs, a.tags, new Date, new Date, id)
+  def fromEdit(id: Option[ObjectId], a: ArticleEdit) = {
+    val create_time = id.flatMap(articles.findOneByID).map(new Article(_).create_time).getOrElse(new Date)
+    Article(a.title, a.author, a.section, a.mdown, a.html, a.abs, a.tags, create_time, new Date, id)
+  }
 
   def list() = articleList(None).map(asItem)
 
