@@ -31,16 +31,22 @@ object AcmImpl extends AcmApi {
       ProblemItem(id, title, submit.toInt, solved.toInt)
     } toList <>
   }
+  var lastMillis: Long = 0
   def tryAppend() = {
-    val newId: Int = Try(db.map(_.as[String]("id").toInt).max).getOrElse(1000) + 1
-    println(s"newId: $newId")
-    val page = newId / 100 - 10
-//    println(s"table before: ${db.find.toList}")
-    parseProblemPage(page).foreach{ p ⇒
-      db.remove("id" $eq p.id)
-      db.insert($(serialization.write(p)))
+    if (lastMillis + 2000 > System.currentTimeMillis())
+      ()
+    else {
+      lastMillis = System.currentTimeMillis()
+      val newId: Int = Try(db.map(_.as[String]("id").toInt).max).getOrElse(1000) + 1
+      println(s"newId: $newId")
+      val page = newId / 100 - 10
+      //    println(s"table before: ${db.find.toList}")
+      parseProblemPage(page).foreach{ p ⇒
+        db.remove("id" $eq p.id)
+        db.insert($(serialization.write(p)))
+      }
+      //    println(s"table after: ${db.find.toList}")
     }
-//    println(s"table after: ${db.find.toList}")
   }
 
   import com.zhranklin.homepage.ActorImplicits._
@@ -85,7 +91,7 @@ object AcmImpl extends AcmApi {
 
   def list() = {
     tryAppend()
-    db.find().map(mongoDBToProblemItem).toList
+    db.find().map(mongoDBToProblemItem).toList.sortBy(_.id.toInt)
   }
 
   def detail(id: String) ={
