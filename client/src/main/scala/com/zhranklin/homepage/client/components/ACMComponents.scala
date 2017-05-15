@@ -1,7 +1,7 @@
 package com.zhranklin.homepage.client.components
 
 import com.zhranklin.homepage.Apis.AcmApi
-import com.zhranklin.homepage.Dtos.Problem
+import com.zhranklin.homepage.Dtos.{Problem, ProblemItem}
 import com.zhranklin.homepage.client.MyClient
 import com.zhranklin.homepage.client.components.MainApp.BC
 import japgolly.scalajs.react.CallbackTo
@@ -16,6 +16,20 @@ import scala.concurrent.Future
  */
 object ACMComponents {
   import autowire._
+
+  val LOCAL_STORAGE_KEY = "acm_problems"
+  private val storage = window.localStorage
+  storage.removeItem(LOCAL_STORAGE_KEY)
+  def cachedList: Future[List[ProblemItem]] = {
+    val data = storage.getItem(LOCAL_STORAGE_KEY)
+    if (data == null)
+      MyClient[AcmApi].list().call().map { res ⇒
+        storage.setItem(LOCAL_STORAGE_KEY, upickle.default.write(res))
+        res
+      }
+    else Future.successful(upickle.default.read[List[ProblemItem]](storage.getItem(LOCAL_STORAGE_KEY)))
+
+  }
 
   object list {
     import com.zhranklin.homepage.Dtos._
@@ -72,7 +86,7 @@ object ACMComponents {
       .build
 
     def apply(ctl: RouterCtl[Page]) = AsyncVdom.future(
-      MyClient[AcmApi].list().call().map(_.toArray).map {ps ⇒
+      cachedList.map(_.toArray).map {ps ⇒
         component(Props(headingComp.sender, ps, ctl))
       }
     )
@@ -100,7 +114,7 @@ object ACMComponents {
   object sidebar {
     val MAX = 40
     def apply(ctl: RouterCtl[Page]) = AsyncVdom.future(
-      MyClient[AcmApi].list().call().map(_.toArray).map { ps ⇒
+      cachedList.map(_.toArray).map { ps ⇒
         <.div(
           <.table(^.cls := "table",
             <.tbody(ps.sortBy(-_.solved).take(MAX).toTagMod(item ⇒
