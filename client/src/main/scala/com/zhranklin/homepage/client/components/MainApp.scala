@@ -88,25 +88,23 @@ object MainApp {
   def apply(ctl: RouterCtl[Page], nav: String, heading: VdomElement, sidebar: VdomElement, body: Body): VdomElement =
     comp(Props(ctl, nav, heading, sidebar, body))
 
-  val navTitle = new {
-    val home = "Home"
-    val tech = "Tech"
-    val search = "Search"
-    val notice = "Notice"
-  }
   def apply(ctl: RouterCtl[Page], res: Resolution[Page]): VdomElement = res.page match {
     case Page.Home ⇒
-      apply(ctl, navTitle.home, generalHeading("Zhranklin's Blog - Index"), ArticleComponents.sidebar(ctl), ArticleComponents.index(ctl))
+      apply(ctl, Nav.title.home, generalHeading("Zhranklin's Blog - Index"), ArticleComponents.sidebar(ctl), ArticleComponents.index(ctl))
     case Page.Article(id) ⇒
-      apply(ctl, navTitle.home, generalHeading("loading..."), ArticleComponents.sidebar(ctl), ArticleComponents.detail(id))
+      apply(ctl, Nav.title.home, generalHeading("loading..."), ArticleComponents.sidebar(ctl), ArticleComponents.detail(id))
     case Page.Edit(id) ⇒
-      apply(ctl, navTitle.home, generalHeading("edit"), ArticleComponents.sidebar(ctl), ArticleComponents.editor(id))
+      apply(ctl, Nav.title.home, generalHeading("edit"), ArticleComponents.sidebar(ctl), ArticleComponents.editor(id))
     case Page.Search ⇒
       window.location.href = "/solr"
       null
     case Page.Notice ⇒
       window.location.href = "/notice"
       null
+    case Page.ACM.List ⇒
+      apply(ctl, Nav.title.soj, ACMComponents.list.headingComp(), ACMComponents.sidebar(ctl), ACMComponents.list(ctl))
+    case Page.ACM.Detail(id) ⇒
+      apply(ctl, Nav.title.soj, generalHeading("loading..."), ACMComponents.sidebar(ctl), ACMComponents.detail(id))
   }
 
 

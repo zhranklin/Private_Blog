@@ -4,9 +4,10 @@ import java.util.Date
 
 import akka.http.scaladsl.model.{ContentType, HttpEntity}
 import com.mongodb.casbah.Imports.{MongoDBList ⇒ $$, MongoDBObject ⇒ $, _}
-import com.zhranklin.homepage.Apis.ArticleApi
+import com.zhranklin.homepage.Apis.{AcmApi, ArticleApi}
 import com.zhranklin.homepage.Dtos.{ArticleEdit, ArticleItem}
 import com.zhranklin.homepage.RouteService
+import com.zhranklin.homepage.acm.AcmImpl
 import com.zhranklin.homepage.blog.Article
 import org.bson.types.ObjectId
 import upickle.Js
@@ -17,10 +18,48 @@ import scala.util.Try
 /**
  * Created by Zhranklin on 2017/3/1.
  */
-trait ReactRoute extends RouteService with ArticleApi {
+trait ReactRoute extends RouteService {
+
+  object ArticleImpl extends ArticleApi {
+    import com.zhranklin.homepage.blog.db._
+
+    def list() = articleList(None).map{ a ⇒ ArticleItem(a.id.get.toHexString, a.title, a.author, a.create_time.dateString, a.abs, a.tags)}
+
+    def asEdit(a: Article) = ArticleEdit(a.title, a.author, a.section, a.mdown, a.html, a.abs, a.tags)
+    def get(id: String): Option[ArticleEdit] = for {
+      bid ← Try(new ObjectId(id)).toOption //验证id这个字符串是否符合ObjectId构造器的要求,如果不符合则可认为是新文章
+      mongo ← articles.findOneByID(bid)
+    } yield asEdit(new Article(mongo))
+
+    def save(id: Option[String], article: ArticleEdit) = {
+      def fromEdit(id: Option[ObjectId], a: ArticleEdit) = {
+        val create_time = id.flatMap(articles.findOneByID).map(new Article(_).create_time).getOrElse(new Date)
+        Article(a.title, a.author, a.section, a.mdown, a.html, a.abs, a.tags, create_time, new Date, id)
+      }
+      val art = fromEdit(id.map(new ObjectId(_)), article).mongo
+      if (id.isEmpty) {
+        println("1" + art)
+        println("sss")
+        articles.insert(art)
+        articles.foreach(println)
+      }
+      else {
+        println("2" + art)
+        articles.update("_id" $eq new ObjectId(id.get), art)
+      }
+      refreshArticleList()
+    }
+  }
 
   import com.zhranklin.homepage.ActorImplicits._
-  import com.zhranklin.homepage.blog.db._
+
+  val router = {
+    import Autowire.route
+    List(
+      route[ArticleApi](ArticleImpl),
+      route[AcmApi](AcmImpl)
+    ).reduce(_.orElse(_))
+  }
 
   abstract override def myRoute = super.myRoute ~
     pathPrefix("react") {
@@ -38,7 +77,7 @@ trait ReactRoute extends RouteService with ArticleApi {
         data.decodeString(nb.charset.value)
     })) { (s, e) ⇒
       complete {
-        Autowire.route[ArticleApi](this)(
+        router(
           autowire.Core.Request(
             s,
             upickle.json.read(e).asInstanceOf[Js.Obj].value.toMap
@@ -52,34 +91,4 @@ trait ReactRoute extends RouteService with ArticleApi {
     def write[Result: Writer](r: Result) = upickle.default.writeJs(r)
   }
 
-  def asItem(a: Article) = ArticleItem(a.id.get.toHexString, a.title, a.author, a.create_time.dateString, a.abs, a.tags)
-
-  def asEdit(a: Article) = ArticleEdit(a.title, a.author, a.section, a.mdown, a.html, a.abs, a.tags)
-
-  def fromEdit(id: Option[ObjectId], a: ArticleEdit) = {
-    val create_time = id.flatMap(articles.findOneByID).map(new Article(_).create_time).getOrElse(new Date)
-    Article(a.title, a.author, a.section, a.mdown, a.html, a.abs, a.tags, create_time, new Date, id)
-  }
-
-  def list() = articleList(None).map(asItem)
-
-  def get(id: String): Option[ArticleEdit] = for {
-    bid ← Try(new ObjectId(id)).toOption //验证id这个字符串是否符合ObjectId构造器的要求,如果不符合则可认为是新文章
-    mongo ← articles.findOneByID(bid)
-  } yield asEdit(new Article(mongo))
-
-  def save(id: Option[String], article: ArticleEdit) = {
-    val art = fromEdit(id.map(new ObjectId(_)), article).mongo
-    if (id.isEmpty) {
-      println("1" + art)
-      println("sss")
-      articles.insert(art)
-      articles.foreach(println)
-    }
-    else {
-      println("2" + art)
-      articles.update("_id" $eq new ObjectId(id.get), art)
-    }
-    refreshArticleList()
-  }
 }

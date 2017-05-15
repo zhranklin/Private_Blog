@@ -2,15 +2,14 @@ package com.zhranklin.homepage.client
 
 import japgolly.scalajs.react.component.Scala.BackendScope
 import japgolly.scalajs.react.extra.{Listenable, OnUnmount}
+import japgolly.scalajs.react.vdom.PackageBase
 import japgolly.scalajs.react.{Children, CtorType, ReactEventTypes, vdom}
-
-import scalaz.Alpha.B
 
 /**
  * Created by zhranklin on 2017/5/10.
  */
 package object components extends ComponentUtils
-trait ComponentUtils extends vdom.PackageBase with ReactEventTypes {
+trait ComponentUtils extends PackageBase with ReactEventTypes {
   import vdom.{HtmlAttrAndStyles, HtmlTags}
 
   implicit val executionContext = scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
@@ -19,6 +18,7 @@ trait ComponentUtils extends vdom.PackageBase with ReactEventTypes {
   val ScalaComponent = japgolly.scalajs.react.ScalaComponent
   type ScalaComponent[P, S, B, CT[-p, +u] <: CtorType[p, u]] = ScalaComponent.Component[P, S, B, CT]
   val Callback = japgolly.scalajs.react.Callback
+  val CallbackTo = japgolly.scalajs.react.CallbackTo
   type Callback = japgolly.scalajs.react.Callback
   val Page = com.zhranklin.homepage.client.Page
   type Page = com.zhranklin.homepage.client.Page
@@ -31,6 +31,8 @@ trait ComponentUtils extends vdom.PackageBase with ReactEventTypes {
 
   def handleInput[P, S]($: BackendScope[P, S])(mod: String ⇒ S ⇒ S) =
     (e: ReactEventFromInput) ⇒ Callback(e.persist()) >> $.modState(mod(e.target.value))
+  def pipeInput[P, S]($: BackendScope[P, S])(mod: String ⇒ S ⇒ S) =
+    (e: ReactEventFromInput) ⇒ Callback(e.persist()) >> $.modState(mod(e.target.value)) >> CallbackTo(e.target.value)
   type StateW[P, S, B] = japgolly.scalajs.react.component.builder.Lifecycle.StateW[P, S, B]
 
   object Listenable {

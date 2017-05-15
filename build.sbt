@@ -36,6 +36,7 @@ lazy val server = (project in file("server")).settings(
     "org.slf4j"         %  "slf4j-simple"     % "1.7.21"    ::
     "org.apache.httpcomponents" % "httpclient"% "4.5.2"     ::
     "com.vmunier"       %% "scalajs-scripts"  % "1.1.0"     ::
+    "com.zhranklin"     %% "scala-tricks"     % "0.1.0"     ::
     jsDeps.highlightjs  %  "provided"         ::
     jsDeps.simplemde    %  "provided"         ::
     Nil,

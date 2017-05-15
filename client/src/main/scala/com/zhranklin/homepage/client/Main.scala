@@ -10,6 +10,7 @@ import org.scalajs.dom
 
 import scala.reflect.ClassTag
 import scala.scalajs.js
+import scala.scalajs.js.|
 
 sealed trait Page
 object Page {
@@ -19,6 +20,10 @@ object Page {
   case class Edit(id: Option[String]) extends Page
   case object Search extends Page
   case object Notice extends Page
+  object ACM {
+    case object List extends Page
+    case class Detail(id: String) extends Page
+  }
 }
 
 object Main extends js.JSApp {
@@ -40,6 +45,8 @@ object Main extends js.JSApp {
       | staticRoute("tech", Tech)
       | staticRoute("search", Search)
       | staticRoute("notice", Notice)
+      | staticRoute("acm", ACM.List)
+      | dynamicRouteCT("acm" / string("[0-9]+").caseClass[ACM.Detail])
       | dynamicRouteCT("article" / string("[a-fA-F0-9]+").caseClass[Article])
       | dynamicRouteCT("editor" ~ ("/" ~ string("[a-fA-F0-9]+")).option.caseClass[Edit])
       ).notFound(_ ⇒ redirectToPage(Home)(Redirect.Replace))
