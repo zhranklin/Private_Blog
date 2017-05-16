@@ -6,11 +6,10 @@ import com.mongodb.casbah.MongoClient
 import com.zhranklin.homepage.Apis.AcmApi
 import com.zhranklin.homepage.Dtos.{Problem, ProblemItem}
 import org.jsoup.Jsoup
-
 import com.mongodb.casbah.Imports.{MongoDBList ⇒ $$, MongoDBObject ⇒ $, _}
 import com.typesafe.config.ConfigFactory
 import com.zhranklin.homepage.Util._
-import org.jsoup.nodes.Node
+import org.jsoup.nodes.{Element, Node}
 import org.jsoup.select.NodeVisitor
 
 import scala.concurrent.Future
@@ -97,7 +96,14 @@ object AcmImpl extends AcmApi {
   def detail(id: String) ={
     val doc = Jsoup.connect(s"$host/problem/$id/").get//.select(".Section1")
     .traverse(new NodeVisitor {
-      def head(node: Node, depth: Int) = node.removeAttr("style")
+      def head(node: Node, depth: Int) = {
+        node.removeAttr("style")
+        node match {
+          case e: Element if e.tagName == "img" && e.hasAttr("src") ⇒
+            e.attr("src", e.absUrl("src"))
+          case _ ⇒ ()
+        }
+      }
       def tail(node: Node, depth: Int) = ()
     })
 
