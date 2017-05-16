@@ -101,7 +101,7 @@ object AcmImpl extends AcmApi {
       def tail(node: Node, depth: Int) = ()
     })
 
-    val title = Jsoup.connect(s"$host/problem.action?id=1309").get.select("body > h1").text().split(":").drop(1).mkString(":")
+    val title = Jsoup.connect(s"$host/problem.action?id=$id").get.select("body > h1").text().split(":").drop(1).mkString(":")
     Problem(title, doc.toString)
   }
 
