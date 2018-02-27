@@ -1,6 +1,7 @@
 package com.zhranklin.homepage.react
 
 import java.util.Date
+import java.util.concurrent.TimeUnit
 
 import akka.http.scaladsl.model.{ContentType, HttpEntity}
 import com.mongodb.casbah.Imports.{MongoDBList ⇒ $$, MongoDBObject ⇒ $, _}
@@ -13,6 +14,7 @@ import org.bson.types.ObjectId
 import upickle.Js
 import upickle.default._
 
+import scala.concurrent.duration.FiniteDuration
 import scala.util.Try
 
 /**
@@ -72,15 +74,16 @@ trait ReactRoute extends RouteService {
         getFromResource("public/" + file)
       }
     } ~
-    (post & path("api" / Segments) & extract(_.request.entity match {
-      case HttpEntity.Strict(nb: ContentType.NonBinary, data) =>
-        data.decodeString(nb.charset.value)
-    })) { (s, e) ⇒
+    (post & path("api" / Segments) & extractStrictEntity(FiniteDuration(3, TimeUnit.SECONDS))) { (s, e) ⇒
       complete {
+        val payload = e match {
+          case HttpEntity.Strict(nb: ContentType.NonBinary, data) =>
+            data.decodeString(nb.charset.value)
+        }
         router(
           autowire.Core.Request(
             s,
-            upickle.json.read(e).asInstanceOf[Js.Obj].value.toMap
+            upickle.json.read(payload).asInstanceOf[Js.Obj].value.toMap
           )
         ).map(upickle.json.write(_))
       }
