@@ -18,3 +18,4 @@ nohup.out
 password
 *.jks
 .DS_Store
+tmp

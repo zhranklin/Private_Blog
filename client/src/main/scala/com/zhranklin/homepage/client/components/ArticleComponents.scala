@@ -33,7 +33,7 @@ object ArticleComponents {
             <.div(^.cls := "row",
               <.div(^.cls := "col-md-12",
                 <.p(a.abs, "..."),
-                <.p(^.cls := "lead", <.button(^.cls := "btn btn-default", readMoreLink, "Read More")),
+                <.p(^.cls := "lead", <.button(^.cls := "btn btn-light", readMoreLink, "Read More")),
                 <.p(^.cls := "pull-right",
                   a.tags.toTagMod(t ⇒ TagMod(<.span(^.cls := "label label-default", t), " "))),
                 <.ul(^.cls := "list-inline",
@@ -72,13 +72,13 @@ object ArticleComponents {
         window.console.log("bbb")
         $("pre code").each{ (block: dom.Element) ⇒
           window.console.log(block)
-          JS.hljs.highlightBlock(block)
+          Modules.Hljs.highlightBlock(block)
         }
       }
 
     val comp = ScalaComponent.builder[Option[ArticleEdit]]("Detail")
       .render_P (_.map { article ⇒
-        val html = JS.marked(article.mdown.get).asInstanceOf[String]
+        val html = Modules.Marked(article.mdown.get).asInstanceOf[String]
         <.div(^.dangerouslySetInnerHtml := html): VdomElement
       }.getOrElse(<.div(<.p("未找到该文章"))))
       .configure(DidRender.did_P(_.map(a ⇒ articleHeading(a.title, a.tags)).foreachCb(sender.heading) >> highlight))
@@ -112,7 +112,7 @@ object ArticleComponents {
       def submit = Callback {
         val state = $.state.runNow()
         val (title, md) = content.get(state)
-        val abs = JS.marked(md).asInstanceOf[String].replaceAll("<.*?>", " ").replaceAll("\\s\\s+", " ").take(200)
+        val abs = Modules.Marked(md).asInstanceOf[String].replaceAll("<.*?>", " ").replaceAll("\\s\\s+", " ").take(200)
         MyClient[ArticleApi].save($.props.runNow(), state.edit.copy(abs = abs)).call()
           .foreach(u ⇒ window.alert("保存成功"))
       }
@@ -136,7 +136,7 @@ object ArticleComponents {
                   ^.onChange ==> handleInput($)(text ⇒ section.set(_,text)))),
               <.div(^.cls := "col-md-2",
                 <.p( ^.cls :="lead",
-                  <.button(^.cls := "btn btn-default", ^.onClick --> submit, "提交"))))),
+                  <.button(^.cls := "btn btn-light", ^.onClick --> submit, "提交"))))),
           <.textarea(^.id := "editor"))
     }
 
@@ -155,7 +155,7 @@ object ArticleComponents {
       }
       .componentDidMount { cdm ⇒
         Callback {
-          mde = JsObj.newInstance(JsObj.global.SimpleMDE)(JsObj.literal(
+          mde = new Modules.SimpleMDE(JsObj.literal(
             element = JS.document.getElementById("editor"),
             spellChecker = false,
             autosave = JsObj.literal(
@@ -165,7 +165,7 @@ object ArticleComponents {
             renderingConfig = JsObj.literal(
               singleLineBreaks = false,
               codeSyntaxHighlighting = true
-            )))
+            ))).asInstanceOf[JsObj]
           mde.codemirror.on("change", () ⇒ {
             val text = mde.value().asInstanceOf[String]
             var (titleWithSharp, md) = text.splitAt(text.indexOf('\n'))

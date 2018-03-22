@@ -1,5 +1,6 @@
 package com.zhranklin.homepage.client
 
+import com.zhranklin.homepage.client.components.Modules
 import japgolly.scalajs.react.component.Scala.BackendScope
 import japgolly.scalajs.react.extra.{Listenable, OnUnmount}
 import japgolly.scalajs.react.vdom.PackageBase
@@ -22,7 +23,7 @@ trait ComponentUtils extends PackageBase with ReactEventTypes {
   type Callback = japgolly.scalajs.react.Callback
   val Page = com.zhranklin.homepage.client.Page
   type Page = com.zhranklin.homepage.client.Page
-  val $ = org.scalajs.jquery.jQuery
+  val $ = Modules.JQuery
   val JsObj = scala.scalajs.js.Dynamic
   type JsObj = scala.scalajs.js.Dynamic
   val JS = JsObj.global

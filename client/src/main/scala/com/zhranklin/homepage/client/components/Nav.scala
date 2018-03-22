@@ -20,7 +20,7 @@ object Nav {
         <.a(^.cls := "nav-link", ctl setOnClick target, ^.href := "#",
           title + " ",
           <.span(^.cls := "sr-only", "(current)")))
-    <.nav(^.cls := "navbar navbar-fixed-top navbar-dark bg-inverse",
+    <.nav(^.cls := "navbar fixed-top navbar-expand-md navbar-dark bg-dark",
       <.a(^.cls := "navbar-brand", ctl setOnClick Page.Home, "Zhranklin's Blog", ^.href := "#"),
       <.ul(^.cls := "nav navbar-nav",
         item(title.home, Page.Home),

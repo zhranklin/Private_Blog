@@ -2,19 +2,36 @@
 <!DOCTYPE html>
 
 <html>
-    <head>
-        <title>@title</title>
-        @*<link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"/>*@
-        <link rel="stylesheet" href="/css/bootstrap.min.css">
-        <link rel="stylesheet" href="/css/tether-theme-basic.min.css">
-        <link rel="stylesheet" href="/css/style.css">
-        <link rel="stylesheet" href="/css/simplemde.min.css">
-        <link rel="stylesheet" href="/css/tomorrow.min.css">
-    </head>
-    <body>
-        <div id="root"></div>
-        <div id="root1"></div>
-        @scalajs.html.scripts("client", name => s"/assets/$name", name => getClass.getResource(s"/public/$name") != null)
-        <script type="text/javascript" src="//localhost:12345/workbench.js"></script>
-    </body>
+  <head>
+    <title>@title</title>
+    @*<link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"/>*@
+    <link rel="stylesheet" href="/assets/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/tether-theme-basic.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/simplemde.min.css">
+    <link rel="stylesheet" href="/css/tomorrow.min.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    <div id="root1"></div>
+    @if(getClass.getResource("/public/client-fastopt-bundle.js") != null) {
+      <script type="text/javascript" src="/assets/client-fastopt-bundle.js"></script>
+    }
+    @if(getClass.getResource("/public/client-opt-bundle.js") != null) {
+      <script type="text/javascript" src="/assets/client-opt-bundle.js"></script>
+    }
+
+    @assetIfExists(filename: String) = {
+    @if(getClass.getResource(s"/public/$filename") != null) {
+      <script type="text/javascript" src="@{s"/assets/$filename"}"></script>
+    }
+    }
+    @assetIfExists("client-opt-library.js")
+    @assetIfExists("client-fastopt-library.js")
+    @assetIfExists("client-opt-loader.js")
+    @assetIfExists("client-fastopt-loader.js")
+    @assetIfExists("client-opt.js")
+    @assetIfExists("client-fastopt.js")
+    <script type="text/javascript" src="//localhost:12345/workbench.js"></script>
+  </body>
 </html>

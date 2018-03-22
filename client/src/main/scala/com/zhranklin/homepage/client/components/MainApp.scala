@@ -16,8 +16,8 @@ object MainApp {
 
   def broadcaster = new BC
 
-  JS.marked.setOptions(JsObj.literal(
-    renderer = JsObj.newInstance(JS.marked.Renderer)(),
+  Modules.Marked.setOptions(JsObj.literal(
+    renderer = JsObj.newInstance(Modules.Marked.Renderer)(),
     valgfm = true,
     tables = true,
     breaks = false,

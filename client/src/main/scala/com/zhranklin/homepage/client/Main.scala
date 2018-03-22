@@ -55,6 +55,8 @@ object Main extends js.JSApp {
 
   def main(): Unit = {
 
+    js.Dynamic.global.require("bootstrap")
+
     val baseUrl = BaseUrl.fromWindowOrigin / "react/"
     val mountPoint = dom.document.getElementById("root")
     val router: ScalaComponent[Unit, Resolution[Page], OnUnmount.Backend, CtorType.Nullary] = Router(baseUrl, routerConfig)
